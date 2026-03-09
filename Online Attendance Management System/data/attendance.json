@@ -1,0 +1,34 @@
+[
+  {
+    "id": "1772536811719",
+    "studentId": "1772339289774",
+    "studentName": "Aryan Bansal",
+    "date": "2026-03-03",
+    "status": "present",
+    "markedAt": "2026-03-03T11:20:11.719Z"
+  },
+  {
+    "id": "1772866739931",
+    "studentId": "1772339289774",
+    "studentName": "Aryan Bansal",
+    "date": "2026-03-07",
+    "status": "absent",
+    "markedAt": "2026-03-07T06:58:59.931Z"
+  },
+  {
+    "id": "1773058135644",
+    "studentId": "1772339289774",
+    "studentName": "Aryan Bansal",
+    "date": "2026-03-09",
+    "status": "present",
+    "markedAt": "2026-03-09T12:08:55.644Z"
+  },
+  {
+    "id": "1773059532534",
+    "studentId": "1772339289774",
+    "studentName": "Aryan Bansal",
+    "date": "2026-03-09",
+    "status": "present",
+    "markedAt": "2026-03-09T12:32:12.534Z"
+  }
+]

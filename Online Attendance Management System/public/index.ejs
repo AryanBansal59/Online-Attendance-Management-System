@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%# Meta Tags %>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Attendance Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0d0d14;
+      --ink2: #16151f;
+      --surface: #1e1c2a;
+      --surface2: #272535;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #eeeaf8;
+      --text-muted: #7c7a94;
+      --text-dim: #4a4864;
+      --violet: #7c3aed;
+      --violet-light: #8b5cf6;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --amber: #f59e0b;
+      --glow-v: rgba(124,58,237,0.35);
+      --glow-c: rgba(6,182,212,0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.12;
+    }
+
+    .bg-blob-1 { width: 600px; height: 600px; background: var(--violet); top: -200px; left: -150px; animation: blobFloat 12s ease-in-out infinite; }
+    .bg-blob-2 { width: 500px; height: 500px; background: var(--cyan); bottom: -150px; right: -100px; animation: blobFloat 10s ease-in-out infinite reverse; }
+    .bg-blob-3 { width: 350px; height: 350px; background: #a855f7; top: 50%; left: 60%; transform: translate(-50%,-50%); animation: blobFloat 14s ease-in-out infinite 4s; }
+
+    @keyframes blobFloat {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(40px,-40px) scale(1.08); }
+      66% { transform: translate(-30px,25px) scale(0.94); }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 520px;
+      animation: pageIn 0.7s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(32px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+
+    .hero {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #a78bfa;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: #a78bfa;
+      border-radius: 50%;
+      animation: dotPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes dotPulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    @keyframes badgePulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(124,58,237,0); }
+      50% { box-shadow: 0 0 20px rgba(124,58,237,0.2); }
+    }
+
+    .hero-icon {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 20px rgba(124,58,237,0.5));
+      animation: iconFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .hero h1 {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(90deg, var(--violet-light), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 400;
+    }
+
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+
+    .nav-section {
+      margin-bottom: 20px;
+    }
+
+    .nav-section:last-child { margin-bottom: 0; }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .nav-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(124,58,237,0.08), transparent);
+      opacity: 0;
+      transition: opacity 0.22s;
+    }
+
+    .nav-link:hover {
+      border-color: rgba(124,58,237,0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(124,58,237,0.15);
+    }
+
+    .nav-link:hover::before { opacity: 1; }
+
+    .nav-link-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .icon-violet { background: rgba(124,58,237,0.18); }
+    .icon-cyan { background: rgba(6,182,212,0.15); }
+    .icon-emerald { background: rgba(16,185,129,0.15); }
+    .icon-amber { background: rgba(245,158,11,0.15); }
+    .icon-rose { background: rgba(244,63,94,0.12); }
+
+    .nav-link-content {}
+    .nav-link-title { font-weight: 600; font-size: 14px; }
+    .nav-link-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .nav-link-arrow {
+      margin-left: auto;
+      color: var(--text-dim);
+      font-size: 14px;
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    .nav-link:hover .nav-link-arrow {
+      transform: translateX(3px);
+      color: var(--violet-light);
+    }
+
+
+    .info-box {
+      margin-top: 20px;
+      background: rgba(124,58,237,0.06);
+      border: 1px solid rgba(124,58,237,0.15);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+
+    .info-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #a78bfa;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-steps {
+      display: grid;
+      gap: 8px;
+    }
+
+    .info-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .step-num {
+      width: 20px; height: 20px;
+      background: rgba(124,58,237,0.2);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #a78bfa;
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .step-text strong { color: var(--text); font-weight: 600; }
+
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+  </div>
+
+  <div class="page">
+    <div class="hero">
+      <div class="hero-badge"><div class="hero-badge-dot"></div>Live System</div>
+      <span class="hero-icon">📚</span>
+      <h1>Attendance <span>Management</span></h1>
+      <p>Real-time Student Attendance Tracking System</p>
+    </div>
+
+    <div class="card">
+      <%# Authentication Section %>
+      <div class="nav-section">
+        <div class="section-label">Authentication</div>
+        <div class="nav-grid">
+          <a href="/api/auth/signin" class="nav-link">
+            <div class="nav-link-icon icon-violet">🔐</div>
+            <div class="nav-link-content">
+              <div class="nav-link-title">Sign In</div>
+              <div class="nav-link-desc">Access your account</div>
+            </div>
+            <span class="nav-link-arrow">›</span>
+          </a>
+        </div>
+      </div>
+
+      <%# Attendance Section %>
+      <div class="nav-section">
+        <div class="section-label">Attendance</div>
+        <div class="nav-grid cols-2">
+          <a href="/mark-attendance" class="nav-link">
+            <div class="nav-link-icon icon-emerald">✓</div>
+            <div class="nav-link-content">
+              <div class="nav-link-title">Mark</div>
+              <div class="nav-link-desc">Record today</div>
+            </div>
+          </a>
+          <a href="/view-attendance" class="nav-link">
+            <div class="nav-link-icon icon-cyan">📊</div>
+            <div class="nav-link-content">
+              <div class="nav-link-title">View</div>
+              <div class="nav-link-desc">Check records</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <%# Dashboard Section %>
+      <div class="nav-section">
+        <div class="section-label">Dashboard</div>
+        <div class="nav-grid">
+          <a href="/dashboard" class="nav-link">
+            <div class="nav-link-icon icon-amber">👤</div>
+            <div class="nav-link-content">
+              <div class="nav-link-title">Dashboard & Profile</div>
+              <div class="nav-link-desc">View stats, manage profile</div>
+            </div>
+            <span class="nav-link-arrow">›</span>
+          </a>
+        </div>
+      </div>
+
+      <%# Information Box %>
+      <div class="info-box">
+        <div class="info-title">ℹ️ How to Use</div>
+        <div class="info-steps">
+          <div class="info-step"><div class="step-num">1</div><div class="step-text"><strong>Sign Up:</strong> Create your account as a student or teacher</div></div>
+          <div class="info-step"><div class="step-num">2</div><div class="step-text"><strong>Sign In:</strong> Login with your credentials</div></div>
+          <div class="info-step"><div class="step-num">3</div><div class="step-text"><strong>Mark Attendance:</strong> Teachers mark student attendance</div></div>
+          <div class="info-step"><div class="step-num">4</div><div class="step-text"><strong>View Attendance:</strong> Check real-time attendance percentage</div></div>
+          <div class="info-step"><div class="step-num">5</div><div class="step-text"><strong>Dashboard:</strong> View profile and system statistics</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">v1.0 · Attendance Management System</div>
+  </div>
+</body>
+</html>

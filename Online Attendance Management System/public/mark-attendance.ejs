@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%# Meta Tags %>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark Attendance - Attendance Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0d0d14;
+      --surface: #1e1c2a;
+      --surface2: #272535;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #eeeaf8;
+      --text-muted: #7c7a94;
+      --text-dim: #4a4864;
+      --violet: #7c3aed;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .bg-blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.10; }
+    .bg-blob-1 { width: 500px; height: 500px; background: var(--emerald); top: -150px; right: -100px; animation: blobFloat 12s ease-in-out infinite; }
+    .bg-blob-2 { width: 400px; height: 400px; background: var(--violet); bottom: -100px; left: -100px; animation: blobFloat 10s ease-in-out infinite reverse; }
+
+    @keyframes blobFloat {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(20px,-20px); }
+    }
+
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 48px 48px; pointer-events: none; z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; width: 100%; max-width: 500px; animation: pageIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+
+    @keyframes pageIn { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+
+
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; padding: 16px 20px;
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .header-left { display: flex; align-items: center; gap: 10px; }
+
+    .header-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--emerald), var(--cyan));
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; box-shadow: 0 0 18px rgba(16,185,129,0.25);
+    }
+
+    .header-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .user-card {
+      text-align: right; font-size: 12px; color: var(--text-muted);
+    }
+
+    .user-card strong { color: var(--text); display: block; margin-bottom: 6px; font-size: 13px; }
+
+    .logout-btn {
+      padding: 6px 14px; background: rgba(244,63,94,0.1);
+      border: 1px solid rgba(244,63,94,0.2); color: #fda4af;
+      border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600;
+      font-family: 'Outfit', sans-serif; transition: all 0.2s; width: auto;
+    }
+    .logout-btn:hover { background: rgba(244,63,94,0.18); transform: none; box-shadow: none; }
+
+
+    .auth-check {
+      text-align: center; padding: 50px 20px;
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 16px;
+    }
+    .auth-check p { font-size: 15px; color: #fda4af; margin-bottom: 10px; }
+    .auth-check a { color: #a78bfa; text-decoration: none; font-weight: 600; }
+
+
+    .alert { display: none; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; }
+    .alert.show { display: flex; }
+    .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+    .alert.error { background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.2); color: #fda4af; }
+
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 16px; padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text-muted);
+      display: block; margin-bottom: 8px; transition: color 0.2s;
+    }
+    .form-group:focus-within .form-label { color: #a78bfa; }
+
+    .input-wrap { position: relative; }
+
+    .input-wrap input {
+      width: 100%; padding: 12px 14px 12px 40px;
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: 10px; font-size: 14px; color: var(--text);
+      font-family: 'Outfit', sans-serif; outline: none; transition: all 0.22s;
+    }
+
+    .input-wrap input[type="date"] { padding: 12px 14px; color-scheme: dark; }
+    .input-wrap input::placeholder { color: var(--text-dim); }
+    .input-wrap input:focus { border-color: var(--violet); background: #201e30; box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+
+    .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; pointer-events: none; opacity: 0.5; transition: opacity 0.2s; }
+    .form-group:focus-within .input-icon { opacity: 1; }
+
+
+    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .status-radio { display: none; }
+
+    .status-label {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 18px 12px;
+      background: var(--surface2); border: 2px solid var(--border);
+      border-radius: 12px; cursor: pointer; transition: all 0.22s;
+      text-align: center;
+    }
+
+    .status-label:hover { border-color: rgba(255,255,255,0.18); background: #2a283a; }
+
+    .status-radio.present:checked + .status-label {
+      border-color: var(--emerald);
+      background: rgba(16,185,129,0.1);
+      box-shadow: 0 0 0 2px rgba(16,185,129,0.15), 0 4px 16px rgba(16,185,129,0.12);
+    }
+
+    .status-radio.absent:checked + .status-label {
+      border-color: var(--rose);
+      background: rgba(244,63,94,0.08);
+      box-shadow: 0 0 0 2px rgba(244,63,94,0.15), 0 4px 16px rgba(244,63,94,0.08);
+    }
+
+    .status-emoji { font-size: 24px; }
+    .status-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .status-desc { font-size: 11px; color: var(--text-muted); }
+
+    .btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--emerald), var(--cyan));
+      color: white; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600; font-family: 'Outfit', sans-serif;
+      cursor: pointer; transition: all 0.25s; margin-top: 4px;
+      box-shadow: 0 4px 15px rgba(16,185,129,0.25);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,0.35); }
+    .btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    .btn-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.65s linear infinite; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn.loading .btn-spinner { display: block; }
+
+    .back-links { display: flex; gap: 20px; justify-content: center; margin-top: 18px; }
+    .back-links a { font-size: 13px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
+    .back-links a:hover { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+  </div>
+
+  <div class="page">
+    <div class="header">
+      <div class="header-left">
+        <div class="header-icon">✓</div>
+        <div>
+          <div class="header-title">Mark Attendance</div>
+          <div class="header-sub">Record student attendance</div>
+        </div>
+      </div>
+      <div class="user-card" id="userInfo"></div>
+    </div>
+
+    <div class="alert" id="message"></div>
+
+    <div id="authCheck" style="display:none;" class="auth-check">
+      <p>⚠️ Please login first</p>
+      <a href="/api/auth/signin">Go to Sign In →</a>
+    </div>
+
+    <form id="attendanceForm" style="display:none;" class="card">
+      <div class="form-group">
+        <label class="form-label" for="studentId">Student ID *</label>
+        <div class="input-wrap">
+          <span class="input-icon">🆔</span>
+          <input type="text" id="studentId" name="studentId" placeholder="Enter student ID" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="studentName">Student Name *</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="studentName" name="studentName" placeholder="Enter student name" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="date">Date *</label>
+        <div class="input-wrap">
+          <input type="date" id="date" name="date" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Attendance Status *</label>
+        <div class="status-grid">
+          <div>
+            <input type="radio" class="status-radio present" id="status-present" name="status" value="present" required>
+            <label class="status-label" for="status-present">
+              <span class="status-emoji">✅</span>
+              <span class="status-name">Present</span>
+              <span class="status-desc">Student attended</span>
+            </label>
+          </div>
+          <div>
+            <input type="radio" class="status-radio absent" id="status-absent" name="status" value="absent">
+            <label class="status-label" for="status-absent">
+              <span class="status-emoji">❌</span>
+              <span class="status-name">Absent</span>
+              <span class="status-desc">Student missed</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">
+        <div class="btn-spinner" id="spinner"></div>
+        <span id="btnText">Mark Attendance</span>
+      </button>
+    </form>
+
+    <div class="back-links" id="backLink">
+      <a href="/dashboard">← Dashboard</a>
+      <a href="/">← Home</a>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = '/api';
+
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      document.getElementById('authCheck').style.display = 'block';
+      document.getElementById('attendanceForm').style.display = 'none';
+    } else if (user.role !== 'teacher') {
+      document.getElementById('authCheck').style.display = 'block';
+      document.getElementById('authCheck').innerHTML = `
+        <p>🚫 Access Denied</p>
+        <p style="color:var(--text-muted);margin-bottom:12px;font-size:13px;">Only teachers can mark attendance.</p>
+        <a href="/dashboard">Go to Dashboard</a>
+      `;
+      document.getElementById('attendanceForm').style.display = 'none';
+    } else {
+      document.getElementById('attendanceForm').style.display = 'block';
+      document.getElementById('userInfo').innerHTML = `
+        <strong>${user.name}</strong>
+        <span>${user.email}</span><br>
+        <button class="logout-btn" onclick="logout()" style="margin-top:6px;">Sign Out</button>
+      `;
+    }
+
+    function showMessage(msg, type) {
+      const el = document.getElementById('message');
+      el.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+      el.className = 'alert show ' + type;
+      if (type === 'success') setTimeout(() => el.classList.remove('show'), 4000);
+    }
+
+    document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const statusEl = document.querySelector('input[name="status"]:checked');
+      if (!statusEl) { showMessage('Please select attendance status', 'error'); return; }
+
+      const studentId = document.getElementById('studentId').value;
+      const studentName = document.getElementById('studentName').value;
+      const date = document.getElementById('date').value;
+      const status = statusEl.value;
+
+      const btn = document.getElementById('submitBtn');
+      const spinner = document.getElementById('spinner');
+      const btnText = document.getElementById('btnText');
+      btn.disabled = true; btn.classList.add('loading'); spinner.style.display = 'block'; btnText.textContent = 'Marking...';
+
+      try {
+        const response = await fetch(`${API_URL}/attendance/mark`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId, studentName, date, status })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to mark attendance');
+
+        showMessage(`✓ Attendance marked as ${status} for ${studentName}`, 'success');
+        document.getElementById('attendanceForm').reset();
+        document.getElementById('date').value = today;
+
+      } catch (error) {
+        showMessage(error.message, 'error');
+      } finally {
+        btn.disabled = false; btn.classList.remove('loading'); spinner.style.display = 'none'; btnText.textContent = 'Mark Attendance';
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/api/auth/signin';
+    }
+  </script>
+</body>
+</html>

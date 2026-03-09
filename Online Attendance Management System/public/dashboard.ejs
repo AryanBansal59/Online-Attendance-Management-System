@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%# Meta Tags %>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Attendance Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0d0d14;
+      --surface: #1e1c2a;
+      --surface2: #272535;
+      --surface3: #2f2c40;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.11);
+      --text: #eeeaf8;
+      --text-muted: #7c7a94;
+      --text-dim: #4a4864;
+      --violet: #7c3aed;
+      --violet-light: #8b5cf6;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --amber: #f59e0b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--ink);
+      min-height: 100vh;
+      padding: 24px;
+      position: relative;
+    }
+
+    .bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .bg-blob { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.08; }
+    .bg-blob-1 { width: 700px; height: 700px; background: var(--violet); top: -200px; left: -200px; }
+    .bg-blob-2 { width: 500px; height: 500px; background: var(--cyan); bottom: -100px; right: -100px; }
+
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 48px 48px; pointer-events: none; z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; animation: pageIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+
+    @keyframes pageIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding: 18px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .header-left { display: flex; align-items: center; gap: 12px; }
+
+    .header-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--violet), #6366f1);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 20px rgba(124,58,237,0.3);
+    }
+
+    .header-title { font-size: 18px; font-weight: 700; color: var(--text); }
+    .header-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+    .logout-btn {
+      padding: 9px 18px;
+      background: rgba(244,63,94,0.1);
+      border: 1px solid rgba(244,63,94,0.2);
+      color: #fda4af;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+      width: auto;
+    }
+
+    .logout-btn:hover { background: rgba(244,63,94,0.18); border-color: rgba(244,63,94,0.35); transform: none; box-shadow: none; }
+
+
+    .auth-check {
+      text-align: center; padding: 60px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+    }
+    .auth-check p { font-size: 16px; color: #fda4af; margin-bottom: 12px; }
+    .auth-check a { color: #a78bfa; text-decoration: none; font-weight: 600; }
+
+
+    .alert {
+      display: none; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 20px;
+    }
+    .alert.show { display: flex; }
+    .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+    .alert.error { background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.2); color: #fda4af; }
+
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 6px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 9px 14px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+      font-family: 'Outfit', sans-serif;
+      border-radius: 8px;
+      transition: all 0.2s;
+      width: auto;
+    }
+
+    .tab-btn:hover { color: var(--text); background: var(--surface2); transform: none; box-shadow: none; }
+
+    .tab-btn.active {
+      color: var(--text);
+      background: var(--surface2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      display: block;
+      width: 16px; height: 2px;
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+      border-radius: 2px;
+      margin: 4px auto 0;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+
+    .card + .card { margin-top: 16px; }
+
+    .card-title {
+      font-size: 16px; font-weight: 700; color: var(--text);
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+
+    .profile-list { display: grid; gap: 0; }
+
+    .profile-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-item:last-child { border-bottom: none; }
+
+    .profile-key { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+    .profile-val {
+      font-size: 14px; font-weight: 600; color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .role-badge {
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .role-student { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.25); }
+    .role-teacher { background: rgba(6,182,212,0.12); color: #67e8f9; border: 1px solid rgba(6,182,212,0.22); }
+    .role-admin { background: rgba(244,63,94,0.1); color: #fda4af; border: 1px solid rgba(244,63,94,0.2); }
+
+
+    .attendance-card {
+      margin-top: 16px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(6,182,212,0.08));
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .att-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .att-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+    .att-pct { font-size: 24px; font-weight: 800; color: var(--text); }
+
+    .progress-bar {
+      width: 100%; height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px; overflow: hidden; margin-bottom: 12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+      border-radius: 10px;
+      transition: width 1s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .att-stats { display: flex; gap: 16px; }
+    .att-stat { font-size: 12px; color: var(--text-muted); }
+    .att-stat strong { color: var(--text); }
+
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-label {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text-muted);
+      display: block; margin-bottom: 8px; transition: color 0.2s;
+    }
+
+    .form-group:focus-within .form-label { color: #a78bfa; }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px; color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      outline: none; transition: all 0.22s;
+    }
+
+    .form-input::placeholder { color: var(--text-dim); }
+    .form-input:focus { border-color: var(--violet); background: #201e30; box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+
+    .form-select {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px; color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      outline: none; cursor: pointer; transition: all 0.22s;
+      appearance: none;
+    }
+
+    .form-select:focus { border-color: var(--violet); background: #201e30; box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+    .form-select option { background: var(--surface2); }
+
+    .btn {
+      padding: 11px 20px;
+      background: linear-gradient(135deg, var(--violet), #6366f1);
+      color: white; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 4px 15px rgba(124,58,237,0.25);
+      display: inline-flex; align-items: center; gap: 8px;
+      width: auto;
+    }
+
+    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124,58,237,0.35); }
+    .btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    .btn-danger {
+      background: rgba(244,63,94,0.1);
+      border: 1px solid rgba(244,63,94,0.2);
+      color: #fda4af;
+      box-shadow: none;
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+
+    .btn-danger:hover { background: rgba(244,63,94,0.2); border-color: rgba(244,63,94,0.35); box-shadow: none; }
+
+    .btn-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.65s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn.loading .btn-spinner { display: block; }
+
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stats-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+    }
+
+    .stat-card.full { grid-column: 1 / -1; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+    .stat-value { font-size: 30px; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+
+
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead tr { border-bottom: 1px solid var(--border2); }
+
+    th {
+      padding: 10px 12px;
+      text-align: left; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    td { padding: 12px; font-size: 14px; color: var(--text); }
+
+
+    .action-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      padding: 13px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.22s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: auto;
+    }
+
+    .action-btn:hover { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.08); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+
+    .back-link { text-align: center; margin-top: 20px; }
+    .back-link a { font-size: 13px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; }
+    .back-link a:hover { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+  </div>
+
+  <div class="page">
+    <div class="header">
+      <div class="header-left">
+        <div class="header-icon">👤</div>
+        <div>
+          <div class="header-title">Dashboard</div>
+          <div class="header-sub">Attendance Management System</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
+    </div>
+
+    <div id="authCheck" style="display:none;" class="auth-check">
+      <p>⚠️ Please login first</p>
+      <a href="/api/auth/signin">Go to Sign In →</a>
+    </div>
+
+    <div id="content" style="display:none;">
+      <div class="alert" id="message"></div>
+
+      <div class="tabs" id="tabBar">
+        <button class="tab-btn active" onclick="showTab('profile', event)">👤 Profile</button>
+        <button class="tab-btn" id="attendanceTabBtn" onclick="showTab('attendance', event)" style="display:none;">📊 Attendance</button>
+        <button class="tab-btn" id="statsTabBtn" onclick="showTab('stats', event)" style="display:none;">📈 Statistics</button>
+        <button class="tab-btn" id="usersTabBtn" onclick="showTab('users', event)" style="display:none;">👥 Users</button>
+      </div>
+
+
+      <div id="profile" class="tab-content active">
+        <div class="card">
+          <div class="card-title">👤 Your Profile</div>
+          <div class="profile-list" id="profileInfo"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">✏️ Edit Profile</div>
+          <form id="editForm">
+            <div class="form-group">
+              <label class="form-label" for="editName">Full Name</label>
+              <input class="form-input" type="text" id="editName" required>
+            </div>
+            <button type="submit" class="btn" id="updateBtn">
+              <div class="btn-spinner" id="updateSpinner"></div>
+              <span id="updateText">Save Changes</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+
+      <div id="attendance" class="tab-content">
+        <div class="card">
+          <div class="card-title">📊 Your Attendance</div>
+          <div id="attendanceContent"></div>
+        </div>
+      </div>
+
+
+      <div id="stats" class="tab-content">
+        <div class="card">
+          <div class="card-title">📈 System Statistics</div>
+          <div class="stats-grid" id="statsContent"></div>
+        </div>
+      </div>
+
+
+      <div id="users" class="tab-content">
+        <div class="card">
+          <div class="card-title">➕ Add New User</div>
+          <form id="addUserForm">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input class="form-input" type="text" id="addName" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-input" type="email" id="addEmail" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input class="form-input" type="password" id="addPassword" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select class="form-select" id="addRole" required>
+                <option value="">Select Role</option>
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+              </select>
+            </div>
+            <button type="submit" class="btn" id="addUserBtn">
+              <div class="btn-spinner" id="addUserSpinner"></div>
+              <span id="addUserText">Add User</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-title">👥 All Users</div>
+          <div class="table-wrap" id="usersList"></div>
+        </div>
+      </div>
+
+      <div class="action-btns" id="actionButtons"></div>
+    </div>
+
+    <div class="back-link"><a href="/">← Back to Home</a></div>
+  </div>
+
+  <script>
+    const API_URL = '/api';
+    let currentUser = null;
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      document.getElementById('authCheck').style.display = 'block';
+    } else {
+      document.getElementById('content').style.display = 'block';
+      currentUser = user;
+      displayActionButtons();
+
+      if (user.role === 'student') {
+        document.getElementById('attendanceTabBtn').style.display = 'block';
+      } else {
+        document.getElementById('attendanceTabBtn').style.display = 'none';
+      }
+
+      if (user.role === 'admin') {
+        document.getElementById('statsTabBtn').style.display = 'block';
+        document.getElementById('usersTabBtn').style.display = 'block';
+      }
+
+      loadProfile();
+      loadStats();
+    }
+
+    function showTab(tabName, e) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      if (e && e.target) e.target.classList.add('active');
+      if (tabName === 'attendance' && currentUser.role === 'student') loadAttendance();
+      if (tabName === 'users' && currentUser.role === 'admin') loadUsers();
+    }
+
+    function displayActionButtons() {
+      const el = document.getElementById('actionButtons');
+      el.innerHTML = '';
+      if (currentUser.role === 'teacher') {
+        el.innerHTML += '<button class="action-btn" onclick="window.location.href=\'/mark-attendance\'">📝 Mark Attendance</button>';
+      }
+      if (currentUser.role === 'student') {
+        el.innerHTML += '<button class="action-btn" onclick="window.location.href=\'/view-attendance\'">📊 View Attendance</button>';
+      }
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await fetch(`${API_URL}/dashboard/profile/${currentUser.id}`);
+        const data = await res.json();
+
+        const roleClass = `role-${data.user.role}`;
+        document.getElementById('profileInfo').innerHTML = `
+          <div class="profile-item">
+            <span class="profile-key">Name</span>
+            <span class="profile-val">${data.user.name}</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-key">Email</span>
+            <span class="profile-val">${data.user.email}</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-key">Role</span>
+            <span class="role-badge ${roleClass}">${data.user.role}</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-key">Member Since</span>
+            <span class="profile-val">${new Date(data.user.createdAt).toLocaleDateString()}</span>
+          </div>
+          ${data.attendance ? `
+          <div style="margin-top:4px;">
+            <div class="attendance-card">
+              <div class="att-header">
+                <span class="att-label">Attendance Percentage</span>
+                <span class="att-pct">${data.attendance.attendancePercentage}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="profileProgress" style="width:0%"></div>
+              </div>
+              <div class="att-stats">
+                <div class="att-stat">Present: <strong>${data.attendance.presentDays}</strong></div>
+                <div class="att-stat">Absent: <strong>${data.attendance.absentDays || 0}</strong></div>
+                <div class="att-stat">Total: <strong>${data.attendance.totalDays}</strong></div>
+              </div>
+            </div>
+          </div>` : ''}
+        `;
+
+        document.getElementById('editName').value = data.user.name;
+
+        setTimeout(() => {
+          const p = document.getElementById('profileProgress');
+          if (p && data.attendance) p.style.width = data.attendance.attendancePercentage + '%';
+        }, 100);
+
+      } catch (err) { console.error(err); }
+    }
+
+    async function loadAttendance() {
+      if (currentUser.role !== 'student') return;
+      try {
+        const res = await fetch(`${API_URL}/attendance/my-attendance/${currentUser.id}`);
+        const data = await res.json();
+
+        document.getElementById('attendanceContent').innerHTML = `
+          <div class="stats-grid" style="margin-bottom:0;">
+            <div class="stat-card full">
+              <div class="stat-label">Attendance Percentage</div>
+              <div class="stat-value">${data.attendancePercentage}%</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Days</div>
+              <div class="stat-value">${data.totalDays}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Present</div>
+              <div class="stat-value">${data.presentDays}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Absent</div>
+              <div class="stat-value">${data.absentDays}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Late</div>
+              <div class="stat-value">${data.lateDays}</div>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        document.getElementById('attendanceContent').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">No attendance records found.</p>';
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_URL}/dashboard/stats`);
+        const data = await res.json();
+        document.getElementById('statsContent').innerHTML = `
+          <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value">${data.totalUsers}</div></div>
+          <div class="stat-card"><div class="stat-label">Students</div><div class="stat-value">${data.totalStudents}</div></div>
+          <div class="stat-card"><div class="stat-label">Teachers</div><div class="stat-value">${data.totalTeachers}</div></div>
+          <div class="stat-card"><div class="stat-label">Attendance Records</div><div class="stat-value">${data.totalAttendanceRecords}</div></div>
+        `;
+      } catch (err) { console.error(err); }
+    }
+
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('editName').value;
+      const btn = document.getElementById('updateBtn');
+      const spinner = document.getElementById('updateSpinner');
+      const text = document.getElementById('updateText');
+      btn.disabled = true; btn.classList.add('loading'); spinner.style.display = 'block'; text.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`${API_URL}/dashboard/profile/${currentUser.id}/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Update failed');
+        currentUser.name = name;
+        localStorage.setItem('user', JSON.stringify(currentUser));
+        showMessage('Profile updated successfully!', 'success');
+        loadProfile();
+      } catch (err) {
+        showMessage(err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.classList.remove('loading'); spinner.style.display = 'none'; text.textContent = 'Save Changes';
+      }
+    });
+
+    function showMessage(msg, type) {
+      const el = document.getElementById('message');
+      el.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+      el.className = 'alert show ' + type;
+      if (type === 'success') setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API_URL}/auth/admin/users`);
+        const data = await res.json();
+        let html = '<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr></thead><tbody>';
+        data.users.forEach(u => {
+          const rc = `role-${u.role}`;
+          html += `<tr>
+            <td>${u.name}</td>
+            <td style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:13px;">${u.email}</td>
+            <td><span class="role-badge ${rc}">${u.role}</span></td>
+            <td>${u.role !== 'admin' ? `<button class="btn btn-danger" onclick="deleteUser('${u.id}')">Delete</button>` : '<span style="color:var(--text-dim)">—</span>'}</td>
+          </tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('usersList').innerHTML = html;
+      } catch (err) {
+        document.getElementById('usersList').innerHTML = '<p style="color:#fda4af;padding:12px;">Error loading users</p>';
+      }
+    }
+
+    document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('addName').value;
+      const email = document.getElementById('addEmail').value;
+      const password = document.getElementById('addPassword').value;
+      const role = document.getElementById('addRole').value;
+      const btn = document.getElementById('addUserBtn');
+      const spinner = document.getElementById('addUserSpinner');
+      const text = document.getElementById('addUserText');
+      btn.disabled = true; btn.classList.add('loading'); spinner.style.display = 'block'; text.textContent = 'Adding...';
+
+      try {
+        const res = await fetch(`${API_URL}/auth/admin/add-user`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, role })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to add user');
+        showMessage(`${role.charAt(0).toUpperCase() + role.slice(1)} added successfully!`, 'success');
+        document.getElementById('addUserForm').reset();
+        loadUsers();
+      } catch (err) {
+        showMessage(err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.classList.remove('loading'); spinner.style.display = 'none'; text.textContent = 'Add User';
+      }
+    });
+
+    async function deleteUser(userId) {
+      if (!confirm('Are you sure you want to delete this user?')) return;
+      try {
+        const res = await fetch(`${API_URL}/auth/admin/users/${userId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+        showMessage('User deleted successfully!', 'success');
+        loadUsers();
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/api/auth/signin';
+    }
+  </script>
+</body>
+</html>
