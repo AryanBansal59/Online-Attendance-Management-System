@@ -4,6 +4,8 @@
   <%# Meta Tags %>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.svg">
   <title>View Attendance - Attendance Management System</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -17,6 +19,7 @@
       --text-muted: #7c7a94;
       --text-dim: #4a4864;
       --violet: #7c3aed;
+      --violet-light: #8b5cf6;
       --cyan: #06b6d4;
       --emerald: #10b981;
       --rose: #f43f5e;
@@ -53,7 +56,6 @@
 
     @keyframes pageIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-
     .header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 24px; padding: 16px 20px;
@@ -61,6 +63,29 @@
       border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
     }
     .header-left { display: flex; align-items: center; gap: 10px; }
+
+    
+    .brand-inline {
+      display: flex; align-items: center; gap: 8px;
+      padding-right: 12px; margin-right: 2px;
+      border-right: 1px solid var(--border2);
+    }
+    .brand-inline-logo {
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      box-shadow: 0 0 10px rgba(124,58,237,0.3);
+    }
+    .brand-inline-name {
+      font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.3px;
+    }
+    .brand-inline-name span {
+      background: linear-gradient(90deg, var(--violet-light), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
     .header-icon {
       width: 38px; height: 38px;
       background: linear-gradient(135deg, var(--cyan), var(--violet));
@@ -81,16 +106,13 @@
     }
     .logout-btn:hover { background: rgba(244,63,94,0.18); transform: none; box-shadow: none; }
 
-
     .auth-check { text-align: center; padding: 50px 20px; background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; }
     .auth-check p { font-size: 15px; color: #fda4af; margin-bottom: 10px; }
     .auth-check a { color: #a78bfa; text-decoration: none; font-weight: 600; }
 
-
     .alert { display: none; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; }
     .alert.show { display: flex; }
     .alert.error { background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.2); color: #fda4af; }
-
 
     .card {
       background: var(--surface); border: 1px solid var(--border2);
@@ -100,7 +122,6 @@
     }
 
     .card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
-
 
     .search-row { display: flex; gap: 10px; }
 
@@ -133,7 +154,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .btn-search.loading .btn-spinner { display: block; }
 
-
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .stat-card {
@@ -148,7 +168,6 @@
 
     .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; margin-top: 12px; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--violet)); border-radius: 10px; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
-
 
     .records { display: grid; gap: 8px; }
 
@@ -172,7 +191,6 @@
     .status-absent { background: rgba(244,63,94,0.1); color: #fda4af; border: 1px solid rgba(244,63,94,0.2); }
     .status-late { background: rgba(245,158,11,0.1); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
 
-
     .empty-state {
       text-align: center; padding: 40px 20px;
       color: var(--text-muted); font-size: 14px;
@@ -182,6 +200,24 @@
     .back-links { display: flex; gap: 20px; justify-content: center; margin-top: 18px; }
     .back-links a { font-size: 13px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
     .back-links a:hover { color: var(--text-muted); }
+
+    
+    .site-footer {
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 7px; }
+    .footer-brand-logo { width: 20px; height: 20px; background: linear-gradient(135deg, var(--violet), var(--cyan)); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .footer-brand-name { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text-muted); }
+    .footer-copy { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
   </style>
 </head>
 <body>
@@ -193,6 +229,11 @@
   <div class="page">
     <div class="header">
       <div class="header-left">
+        
+        <div class="brand-inline">
+          <div class="brand-inline-logo">📡</div>
+          <div class="brand-inline-name">Attend<span>Track</span></div>
+        </div>
         <div class="header-icon">📊</div>
         <div>
           <div class="header-title">View Attendance</div>
@@ -225,7 +266,6 @@
         </div>
       </div>
 
-
       <div id="statsContainer" style="display:none;" class="card">
         <div class="card-title">📈 Attendance Overview</div>
         <div class="stats-grid">
@@ -242,7 +282,6 @@
           <div class="stat-card"><div class="stat-label">Late</div><div class="stat-value" id="lateDays">0</div></div>
         </div>
       </div>
-
 
       <div id="recordsCard" style="display:none;" class="card">
         <div class="card-title">📋 Attendance Records</div>
@@ -261,6 +300,21 @@
       <a href="/dashboard">← Dashboard</a>
       <a href="/">← Home</a>
     </div>
+
+    
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <div class="footer-brand-logo">📡</div>
+        <span class="footer-brand-name">AttendTrack</span>
+      </div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/mark-attendance">Mark Attendance</a>
+      </div>
+      <div class="footer-copy">© 2025 AttendTrack · Attendance Management System</div>
+    </footer>
+
   </div>
 
   <script>
@@ -336,7 +390,6 @@
         }
 
       } catch (error) {
-
         showMessage(error.message, 'error');
         document.getElementById('statsContainer').style.display = 'none';
         document.getElementById('recordsCard').style.display = 'none';

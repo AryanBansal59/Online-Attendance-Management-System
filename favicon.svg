@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="icon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#e0f2fe" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+  <!-- Signal/radar arcs -->
+  <g fill="none" stroke="url(#icon)" stroke-linecap="round">
+    <path d="M10 22 Q10 10 22 10" stroke-width="2.2" opacity="0.5"/>
+    <path d="M12.5 22 Q12.5 13 22 13" stroke-width="2.2" opacity="0.75"/>
+    <path d="M15 22 Q15 16 22 16" stroke-width="2.2"/>
+  </g>
+  <!-- Dot at signal origin -->
+  <circle cx="10" cy="22" r="2" fill="white"/>
+</svg>

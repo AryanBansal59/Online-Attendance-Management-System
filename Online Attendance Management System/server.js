@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-s
+
 const authRoutes = require('./routes/auth');
 const attendanceRoutes = require('./routes/attendance');
 const dashboardRoutes = require('./routes/dashboard');

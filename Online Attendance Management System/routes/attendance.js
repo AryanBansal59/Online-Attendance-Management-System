@@ -4,28 +4,18 @@ const path = require('path');
 
 const router = express.Router();
 
-
+const usersFile = path.join(__dirname, '../data/users.json');
 const attendanceFile = path.join(__dirname, '../data/attendance.json');
 
-
-const dataDir = path.join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-if (!fs.existsSync(attendanceFile)) {
-  fs.writeFileSync(attendanceFile, JSON.stringify([], null, 2));
-}
-
-
-const getAttendance = () => {
-  try {
-    const data = fs.readFileSync(attendanceFile, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return [];
-  }
+const getUsers = () => {
+  try { return JSON.parse(fs.readFileSync(usersFile, 'utf8')); }
+  catch (err) { return []; }
 };
 
+const getAttendance = () => {
+  try { return JSON.parse(fs.readFileSync(attendanceFile, 'utf8')); }
+  catch (err) { return []; }
+};
 
 const saveAttendance = (records) => {
   fs.writeFileSync(attendanceFile, JSON.stringify(records, null, 2));
@@ -34,29 +24,33 @@ const saveAttendance = (records) => {
 
 router.post('/mark', (req, res) => {
   try {
-    const { studentId, studentName, date, status } = req.body;
+    const { studentId, date, status } = req.body;
 
-
-    if (!studentId || !studentName || !date || !status) {
-      return res.status(400).json({ 
-        error: 'All fields required: studentId, studentName, date, status' 
-      });
+    if (!studentId || !date || !status) {
+      return res.status(400).json({ error: 'studentId, date, and status are required' });
     }
 
+    if (!['present', 'absent', 'late'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be present, absent, or late' });
+    }
 
-    if (!['present', 'absent'].includes(status)) {
-      return res.status(400).json({ 
-        error: 'Status must be present or absent' 
-      });
+    const users = getUsers();
+    const student = users.find(u => u.id === studentId && u.role === 'student');
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found with this ID' });
     }
 
     const attendance = getAttendance();
 
+    const existing = attendance.find(a => a.studentId === studentId && a.date === date);
+    if (existing) {
+      return res.status(400).json({ error: 'Attendance already marked for this student on this date' });
+    }
 
     const record = {
       id: Date.now().toString(),
       studentId,
-      studentName,
+      studentName: student.name,
       date,
       status,
       markedAt: new Date()
@@ -65,10 +59,7 @@ router.post('/mark', (req, res) => {
     attendance.push(record);
     saveAttendance(attendance);
 
-    res.status(201).json({ 
-      message: 'Attendance marked successfully',
-      record
-    });
+    res.status(201).json({ message: 'Attendance marked successfully', record });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error while marking attendance' });
@@ -76,46 +67,85 @@ router.post('/mark', (req, res) => {
 });
 
 
-router.get('/my-attendance/:studentId', (req, res) => {
+router.get('/record', (req, res) => {
   try {
-    const { studentId } = req.params;
-    const attendance = getAttendance();
+    const { studentId, date } = req.query;
 
-
-    const studentAttendance = attendance.filter(a => a.studentId === studentId);
-
-    if (studentAttendance.length === 0) {
-      return res.json({
-        studentId,
-        name: 'N/A',
-        attendancePercentage: 0,
-        totalDays: 0,
-        presentDays: 0,
-        lateDays: 0,
-        absentDays: 0,
-        records: [],
-        message: 'No attendance records found yet'
-      });
+    if (!studentId || !date) {
+      return res.status(400).json({ error: 'studentId and date are required' });
     }
 
+    const attendance = getAttendance();
+    const record = attendance.find(a => a.studentId === studentId && a.date === date);
+
+    if (!record) {
+      return res.status(404).json({ error: 'No attendance record found for this student on this date' });
+    }
+
+    res.json({ record });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while fetching attendance record' });
+  }
+});
+
+
+router.post('/update', (req, res) => {
+  try {
+    const { recordId, studentId, date, status } = req.body;
+
+    if (!status || !['present', 'absent', 'late'].includes(status)) {
+      return res.status(400).json({ error: 'Valid status (present/absent/late) is required' });
+    }
+
+    const attendance = getAttendance();
+
+    let record = null;
+    if (recordId) {
+      record = attendance.find(a => a.id === recordId);
+    } else if (studentId && date) {
+      record = attendance.find(a => a.studentId === studentId && a.date === date);
+    }
+
+    if (!record) {
+      return res.status(404).json({ error: 'Attendance record not found' });
+    }
+
+    record.status = status;
+    record.updatedAt = new Date();
+    saveAttendance(attendance);
+
+    res.json({ message: 'Attendance updated successfully', record });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while updating attendance' });
+  }
+});
+
+
+router.get('/my-attendance/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    const attendance = getAttendance();
+
+    const studentAttendance = attendance.filter(a => a.studentId === userId);
+
+    if (studentAttendance.length === 0) {
+      return res.status(404).json({ error: 'No attendance records found' });
+    }
 
     const totalDays = studentAttendance.length;
     const presentDays = studentAttendance.filter(a => a.status === 'present').length;
     const lateDays = studentAttendance.filter(a => a.status === 'late').length;
     const absentDays = studentAttendance.filter(a => a.status === 'absent').length;
-
-
     const effectivePresent = presentDays + (lateDays * 0.5);
-    const attendancePercentage = ((effectivePresent / totalDays) * 100).toFixed(2);
 
     res.json({
-      studentId,
-      name: studentAttendance[0].studentName,
-      attendancePercentage: parseFloat(attendancePercentage),
       totalDays,
       presentDays,
       lateDays,
       absentDays,
+      attendancePercentage: ((effectivePresent / totalDays) * 100).toFixed(2),
       records: studentAttendance
     });
   } catch (error) {
@@ -125,67 +155,20 @@ router.get('/my-attendance/:studentId', (req, res) => {
 });
 
 
-router.get('/all', (req, res) => {
+router.get('/view', (req, res) => {
   try {
-    const attendance = getAttendance();
+    const { studentId, date, startDate, endDate } = req.query;
+    let attendance = getAttendance();
 
-    if (attendance.length === 0) {
-      return res.json({ 
-        message: 'No attendance records found',
-        records: [] 
-      });
-    }
+    if (studentId) attendance = attendance.filter(a => a.studentId === studentId);
+    if (date) attendance = attendance.filter(a => a.date === date);
+    if (startDate) attendance = attendance.filter(a => a.date >= startDate);
+    if (endDate) attendance = attendance.filter(a => a.date <= endDate);
 
-    res.json({
-      totalRecords: attendance.length,
-      records: attendance
-    });
+    res.json({ records: attendance, total: attendance.length });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error while retrieving all attendance' });
-  }
-});
-
-
-router.get('/summary', (req, res) => {
-  try {
-    const attendance = getAttendance();
-
-
-    const summary = {};
-    attendance.forEach(record => {
-      if (!summary[record.studentId]) {
-        summary[record.studentId] = {
-          studentId: record.studentId,
-          name: record.studentName,
-          totalDays: 0,
-          presentDays: 0,
-          lateDays: 0,
-          absentDays: 0
-        };
-      }
-
-      summary[record.studentId].totalDays++;
-      if (record.status === 'present') summary[record.studentId].presentDays++;
-      else if (record.status === 'late') summary[record.studentId].lateDays++;
-      else if (record.status === 'absent') summary[record.studentId].absentDays++;
-    });
-
-
-    const summaryList = Object.values(summary).map(s => ({
-      ...s,
-      attendancePercentage: s.totalDays > 0 
-        ? (((s.presentDays + (s.lateDays * 0.5)) / s.totalDays) * 100).toFixed(2)
-        : 0
-    }));
-
-    res.json({
-      totalStudents: summaryList.length,
-      summary: summaryList
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error while retrieving summary' });
+    res.status(500).json({ error: 'Server error while viewing attendance' });
   }
 });
 

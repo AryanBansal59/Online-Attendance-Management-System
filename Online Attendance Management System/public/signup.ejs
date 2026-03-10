@@ -4,6 +4,8 @@
   <%# Meta Tags %>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.svg">
   <title>Sign Up - Attendance Management System</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -62,6 +64,30 @@
     @keyframes pageIn {
       from { opacity: 0; transform: translateY(28px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    
+    .brand-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .brand-logo {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      box-shadow: 0 0 14px rgba(124,58,237,0.35);
+      flex-shrink: 0;
+    }
+    .brand-name {
+      font-size: 17px; font-weight: 800; color: var(--text); letter-spacing: -0.4px;
+    }
+    .brand-name span {
+      background: linear-gradient(90deg, var(--violet-light), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
 
     .logo { text-align: center; margin-bottom: 28px; }
@@ -163,7 +189,6 @@
     }
     .pwd-toggle:hover { color: var(--text); transform: translateY(-50%) scale(1.1); box-shadow: none; }
 
-
     .role-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -234,6 +259,24 @@
     .back-link { text-align: center; margin-top: 14px; }
     .back-link a { font-size: 13px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; }
     .back-link a:hover { color: var(--text-muted); }
+
+    
+    .site-footer {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 7px; }
+    .footer-brand-logo { width: 20px; height: 20px; background: linear-gradient(135deg, var(--violet), var(--cyan)); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .footer-brand-name { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text-muted); }
+    .footer-copy { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
   </style>
 </head>
 <body>
@@ -243,6 +286,13 @@
   </div>
 
   <div class="page">
+
+    
+    <div class="brand-bar">
+      <div class="brand-logo">📡</div>
+      <div class="brand-name">Attend<span>Track</span></div>
+    </div>
+
     <div class="logo">
       <div class="logo-mark">📝</div>
       <h1>Create Account</h1>
@@ -313,7 +363,6 @@
           </div>
         </div>
 
-
         <select id="role" name="role" style="display:none;" required>
           <option value="">Select Role</option>
           <option value="student">Student</option>
@@ -332,18 +381,31 @@
       <p>Already have an account? <a href="/api/auth/signin">Sign In</a></p>
     </div>
     <div class="back-link"><a href="/">← Back to Home</a></div>
+
+    
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <div class="footer-brand-logo">📡</div>
+        <span class="footer-brand-name">AttendTrack</span>
+      </div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/api/auth/signin">Sign In</a>
+        <a href="/dashboard">Dashboard</a>
+      </div>
+      <div class="footer-copy">© 2025 AttendTrack · Attendance Management System</div>
+    </footer>
+
   </div>
 
   <script>
     const API_URL = '/api';
-
 
     document.querySelectorAll('input[name="role"]').forEach(radio => {
       radio.addEventListener('change', function() {
         document.getElementById('role').value = this.value;
       });
     });
-
 
     document.getElementById('pwdToggle').addEventListener('click', function() {
       const input = document.getElementById('password');

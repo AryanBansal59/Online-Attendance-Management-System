@@ -4,6 +4,8 @@
   <%# Meta Tags %>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.svg">
   <title>Mark Attendance - Attendance Management System</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -17,6 +19,7 @@
       --text-muted: #7c7a94;
       --text-dim: #4a4864;
       --violet: #7c3aed;
+      --violet-light: #8b5cf6;
       --cyan: #06b6d4;
       --emerald: #10b981;
       --rose: #f43f5e;
@@ -56,7 +59,6 @@
 
     @keyframes pageIn { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
 
-
     .header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 24px; padding: 16px 20px;
@@ -65,6 +67,28 @@
     }
 
     .header-left { display: flex; align-items: center; gap: 10px; }
+
+    
+    .brand-inline {
+      display: flex; align-items: center; gap: 8px;
+      padding-right: 12px; margin-right: 2px;
+      border-right: 1px solid var(--border2);
+    }
+    .brand-inline-logo {
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      box-shadow: 0 0 10px rgba(124,58,237,0.3);
+    }
+    .brand-inline-name {
+      font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.3px;
+    }
+    .brand-inline-name span {
+      background: linear-gradient(90deg, var(--violet-light), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
 
     .header-icon {
       width: 38px; height: 38px;
@@ -90,7 +114,6 @@
     }
     .logout-btn:hover { background: rgba(244,63,94,0.18); transform: none; box-shadow: none; }
 
-
     .auth-check {
       text-align: center; padding: 50px 20px;
       background: var(--surface); border: 1px solid var(--border2);
@@ -99,12 +122,10 @@
     .auth-check p { font-size: 15px; color: #fda4af; margin-bottom: 10px; }
     .auth-check a { color: #a78bfa; text-decoration: none; font-weight: 600; }
 
-
     .alert { display: none; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; }
     .alert.show { display: flex; }
     .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
     .alert.error { background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.2); color: #fda4af; }
-
 
     .card {
       background: var(--surface); border: 1px solid var(--border2);
@@ -136,7 +157,6 @@
 
     .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; pointer-events: none; opacity: 0.5; transition: opacity 0.2s; }
     .form-group:focus-within .input-icon { opacity: 1; }
-
 
     .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
@@ -187,6 +207,24 @@
     .back-links { display: flex; gap: 20px; justify-content: center; margin-top: 18px; }
     .back-links a { font-size: 13px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
     .back-links a:hover { color: var(--text-muted); }
+
+    
+    .site-footer {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 7px; }
+    .footer-brand-logo { width: 20px; height: 20px; background: linear-gradient(135deg, var(--violet), var(--cyan)); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .footer-brand-name { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text-muted); }
+    .footer-copy { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
   </style>
 </head>
 <body>
@@ -198,6 +236,11 @@
   <div class="page">
     <div class="header">
       <div class="header-left">
+        
+        <div class="brand-inline">
+          <div class="brand-inline-logo">📡</div>
+          <div class="brand-inline-name">Attend<span>Track</span></div>
+        </div>
         <div class="header-icon">✓</div>
         <div>
           <div class="header-title">Mark Attendance</div>
@@ -220,14 +263,6 @@
         <div class="input-wrap">
           <span class="input-icon">🆔</span>
           <input type="text" id="studentId" name="studentId" placeholder="Enter student ID" required>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="studentName">Student Name *</label>
-        <div class="input-wrap">
-          <span class="input-icon">👤</span>
-          <input type="text" id="studentName" name="studentName" placeholder="Enter student name" required>
         </div>
       </div>
 
@@ -270,6 +305,21 @@
       <a href="/dashboard">← Dashboard</a>
       <a href="/">← Home</a>
     </div>
+
+    
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <div class="footer-brand-logo">📡</div>
+        <span class="footer-brand-name">AttendTrack</span>
+      </div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/view-attendance">View Attendance</a>
+      </div>
+      <div class="footer-copy">© 2025 AttendTrack · Attendance Management System</div>
+    </footer>
+
   </div>
 
   <script>
@@ -313,7 +363,6 @@
       if (!statusEl) { showMessage('Please select attendance status', 'error'); return; }
 
       const studentId = document.getElementById('studentId').value;
-      const studentName = document.getElementById('studentName').value;
       const date = document.getElementById('date').value;
       const status = statusEl.value;
 
@@ -326,13 +375,13 @@
         const response = await fetch(`${API_URL}/attendance/mark`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ studentId, studentName, date, status })
+          body: JSON.stringify({ studentId, date, status })
         });
 
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Failed to mark attendance');
 
-        showMessage(`✓ Attendance marked as ${status} for ${studentName}`, 'success');
+        showMessage(`✓ Attendance marked as ${status} for ID: ${studentId}`, 'success');
         document.getElementById('attendanceForm').reset();
         document.getElementById('date').value = today;
 

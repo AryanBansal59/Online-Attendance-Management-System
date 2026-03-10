@@ -1,6 +1,6 @@
 [
   {
-    "id": "1772339289774",
+    "id": "122",
     "name": "Aryan Bansal",
     "email": "3073aryanbansal.davk@gmail.com",
     "password": "1234567890",
@@ -13,6 +13,7 @@
     "email": "123@gmail.com",
     "password": "asdfghjkl",
     "role": "teacher",
+    "subject" : "DSA",
     "createdAt": "2026-03-02T16:09:40.978Z"
   },
   {
@@ -22,14 +23,6 @@
     "password": "mnbvcxz",
     "role": "admin",
     "createdAt": "2026-03-03T11:49:49.977Z"
-  },
-  {
-    "id": "1772724909481",
-    "name": "abc",
-    "email": "qaz@gmail.com",
-    "password": "0987654321",
-    "role": "teacher",
-    "createdAt": "2026-03-05T15:35:09.481Z"
   },
   {
     "id": "1773055522000",

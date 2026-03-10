@@ -4,6 +4,8 @@
   <%# Meta Tags %>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="shortcut icon" href="/favicon.svg">
   <title>Online Attendance Management System</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -34,13 +36,13 @@
       background: var(--ink);
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 24px;
+      padding: 20px 24px 32px;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
-
 
     .bg {
       position: fixed;
@@ -91,10 +93,33 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    
+    .brand-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .brand-logo {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      box-shadow: 0 0 14px rgba(124,58,237,0.35);
+      flex-shrink: 0;
+    }
+    .brand-name {
+      font-size: 17px; font-weight: 800; color: var(--text); letter-spacing: -0.4px;
+    }
+    .brand-name span {
+      background: linear-gradient(90deg, var(--violet-light), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
 
     .hero {
       text-align: center;
-      margin-bottom: 36px;
+      margin-bottom: 20px;
     }
 
     .hero-badge {
@@ -104,13 +129,13 @@
       background: rgba(124,58,237,0.12);
       border: 1px solid rgba(124,58,237,0.3);
       border-radius: 100px;
-      padding: 6px 14px;
-      font-size: 12px;
+      padding: 5px 12px;
+      font-size: 11px;
       font-weight: 500;
       color: #a78bfa;
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       animation: badgePulse 3s ease-in-out infinite;
     }
 
@@ -132,25 +157,25 @@
     }
 
     .hero-icon {
-      font-size: 48px;
+      font-size: 36px;
       display: block;
-      margin-bottom: 16px;
-      filter: drop-shadow(0 0 20px rgba(124,58,237,0.5));
+      margin-bottom: 10px;
+      filter: drop-shadow(0 0 16px rgba(124,58,237,0.5));
       animation: iconFloat 4s ease-in-out infinite;
     }
 
     @keyframes iconFloat {
       0%,100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
+      50% { transform: translateY(-6px); }
     }
 
     .hero h1 {
-      font-size: 34px;
+      font-size: 26px;
       font-weight: 800;
       color: var(--text);
-      letter-spacing: -1px;
+      letter-spacing: -0.8px;
       line-height: 1.15;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     .hero h1 span {
@@ -162,22 +187,20 @@
 
     .hero p {
       color: var(--text-muted);
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 400;
     }
-
 
     .card {
       background: var(--surface);
       border: 1px solid var(--border2);
       border-radius: 20px;
-      padding: 28px;
+      padding: 20px;
       box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
     }
 
-
     .nav-section {
-      margin-bottom: 20px;
+      margin-bottom: 14px;
     }
 
     .nav-section:last-child { margin-bottom: 0; }
@@ -213,7 +236,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 14px 16px;
+      padding: 11px 14px;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -275,13 +298,12 @@
       color: var(--violet-light);
     }
 
-
     .info-box {
-      margin-top: 20px;
+      margin-top: 14px;
       background: rgba(124,58,237,0.06);
       border: 1px solid rgba(124,58,237,0.15);
       border-radius: 14px;
-      padding: 18px 20px;
+      padding: 14px 16px;
     }
 
     .info-title {
@@ -326,14 +348,31 @@
 
     .step-text strong { color: var(--text); font-weight: 600; }
 
-
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 12px;
-      color: var(--text-dim);
-      font-family: 'JetBrains Mono', monospace;
+    
+    .site-footer {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
+    .footer-brand {
+      display: flex; align-items: center; gap: 7px;
+    }
+    .footer-brand-logo {
+      width: 20px; height: 20px;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+    }
+    .footer-brand-name { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text-muted); }
+    .footer-copy { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
   </style>
 </head>
 <body>
@@ -344,6 +383,13 @@
   </div>
 
   <div class="page">
+
+    
+    <div class="brand-bar">
+      <div class="brand-logo">📡</div>
+      <div class="brand-name">Attend<span>Track</span></div>
+    </div>
+
     <div class="hero">
       <div class="hero-badge"><div class="hero-badge-dot"></div>Live System</div>
       <span class="hero-icon">📚</span>
@@ -403,20 +449,23 @@
         </div>
       </div>
 
-      <%# Information Box %>
-      <div class="info-box">
-        <div class="info-title">ℹ️ How to Use</div>
-        <div class="info-steps">
-          <div class="info-step"><div class="step-num">1</div><div class="step-text"><strong>Sign Up:</strong> Create your account as a student or teacher</div></div>
-          <div class="info-step"><div class="step-num">2</div><div class="step-text"><strong>Sign In:</strong> Login with your credentials</div></div>
-          <div class="info-step"><div class="step-num">3</div><div class="step-text"><strong>Mark Attendance:</strong> Teachers mark student attendance</div></div>
-          <div class="info-step"><div class="step-num">4</div><div class="step-text"><strong>View Attendance:</strong> Check real-time attendance percentage</div></div>
-          <div class="info-step"><div class="step-num">5</div><div class="step-text"><strong>Dashboard:</strong> View profile and system statistics</div></div>
-        </div>
-      </div>
     </div>
 
-    <div class="footer">v1.0 · Attendance Management System</div>
+    
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <div class="footer-brand-logo">📡</div>
+        <span class="footer-brand-name">AttendTrack</span>
+      </div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/api/auth/signin">Sign In</a>
+        <a href="/api/auth/signup">Sign Up</a>
+        <a href="/dashboard">Dashboard</a>
+      </div>
+      <div class="footer-copy">© 2025 AttendTrack · Attendance Management System</div>
+    </footer>
+
   </div>
 </body>
 </html>
