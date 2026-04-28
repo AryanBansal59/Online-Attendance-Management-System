@@ -1,44 +1,39 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
+const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const { OAuth2Client } = require('google-auth-library');
+const User = require('../models/User');
+const Attendance = require('../models/Attendance');
 
 const router = express.Router();
 const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'your-google-client-id.apps.googleusercontent.com';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-
-const usersFile = path.join(__dirname, '../data/users.json');
-
+// Setup Multer for Profile Picture Uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = path.join(__dirname, '../public/uploads/profiles');
+    if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
 
 router.get('/signin', (req, res) => {
-  res.render('signin');
+  res.render('signin', { googleClientId: GOOGLE_CLIENT_ID });
 });
 
-
-const dataDir = path.join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(usersFile, JSON.stringify([], null, 2));
-}
-
-
-const getUsers = () => {
-  try {
-    const data = fs.readFileSync(usersFile, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return [];
-  }
-};
-
-
-const saveUsers = (users) => {
-  fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
-};
-
-
-router.post('/admin/add-user', (req, res) => {
+// Create a new user (Admin functionality)
+router.post('/admin/add-user', upload.single('profilePic'), async (req, res) => {
   try {
     const { userId, name, email, password, role, subject } = req.body;
 
@@ -60,28 +55,25 @@ router.post('/admin/add-user', (req, res) => {
       });
     }
 
-    const users = getUsers();
-
-    if (users.find(u => u.id === userId)) {
-      return res.status(400).json({ error: 'A user with this ID already exists' });
+    const existingUser = await User.findOne({ $or: [{ id: userId }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User ID or Email already exists' });
     }
 
-    if (users.find(u => u.email === email)) {
-      return res.status(400).json({ error: 'Email already exists' });
-    }
+    const profilePicPath = req.file ? `/uploads/profiles/${req.file.filename}` : null;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = {
+    const newUser = new User({
       id: userId,
       name,
       email,
-      password: password,
+      password: hashedPassword,
       role,
-      ...(role === 'teacher' && { subject }),
-      createdAt: new Date()
-    };
+      subject: role === 'teacher' ? subject : undefined,
+      profilePic: profilePicPath
+    });
 
-    users.push(newUser);
-    saveUsers(users);
+    await newUser.save();
 
     res.status(201).json({ 
       message: `${role.charAt(0).toUpperCase() + role.slice(1)} added successfully`,
@@ -90,7 +82,8 @@ router.post('/admin/add-user', (req, res) => {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        ...(newUser.subject && { subject: newUser.subject })
+        subject: newUser.subject,
+        profilePic: newUser.profilePic
       }
     });
   } catch (error) {
@@ -100,14 +93,12 @@ router.post('/admin/add-user', (req, res) => {
 });
 
 
-router.get('/admin/users', (req, res) => {
+router.get('/admin/users', async (req, res) => {
   try {
-    const users = getUsers();
-
-    const safeUsers = users.map(({ password, ...user }) => user);
+    const users = await User.find({}).select('-password');
     res.json({
       totalUsers: users.length,
-      users: safeUsers
+      users: users
     });
   } catch (error) {
     console.error(error);
@@ -116,12 +107,11 @@ router.get('/admin/users', (req, res) => {
 });
 
 
-router.delete('/admin/users/:userId', (req, res) => {
+router.delete('/admin/users/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    let users = getUsers();
-
-    const userToDelete = users.find(u => u.id === userId);
+    
+    const userToDelete = await User.findOne({ id: userId });
     if (!userToDelete) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -130,8 +120,7 @@ router.delete('/admin/users/:userId', (req, res) => {
       return res.status(403).json({ error: 'Cannot delete admin users' });
     }
 
-    users = users.filter(u => u.id !== userId);
-    saveUsers(users);
+    await User.deleteOne({ id: userId });
 
     res.json({
       message: `${userToDelete.name} has been removed`,
@@ -140,6 +129,92 @@ router.delete('/admin/users/:userId', (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Server error while deleting user' });
+  }
+});
+
+// Update an existing user (Admin functionality)
+router.put('/admin/users/:userId', upload.single('profilePic'), async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { newUserId, name, email, password, role, subject } = req.body;
+
+    const user = await User.findOne({ id: userId });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.role === 'admin' && userId !== req.body.currentAdminId) { 
+      // Prevent editing other admins unless specific permissions are added later
+      return res.status(403).json({ error: 'Cannot update admin users' });
+    }
+
+    // Handle User ID Change (Cascading)
+    let finalId = userId;
+    if (newUserId && newUserId !== userId) {
+      const idExists = await User.findOne({ id: newUserId });
+      if (idExists) {
+        return res.status(400).json({ error: 'New User ID already exists' });
+      }
+      
+      // Update User ID in the User document
+      user.id = newUserId;
+      finalId = newUserId;
+
+      // Cascade update to Attendance records
+      await Attendance.updateMany(
+        { studentId: userId },
+        { $set: { studentId: newUserId } }
+      );
+      
+      console.log(`Cascaded User ID change from ${userId} to ${newUserId} across attendance records.`);
+    }
+
+    // Check if new email is already taken by another user
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        return res.status(400).json({ error: 'Email already in use by another user' });
+      }
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+    
+    if (role && user.role !== 'admin') { // Don't let admin change their own role here
+      if (!['student', 'teacher'].includes(role)) {
+        return res.status(400).json({ error: 'Role must be student or teacher' });
+      }
+      user.role = role;
+    }
+    
+    if (user.role === 'teacher') {
+      user.subject = subject || user.subject;
+    } else {
+      user.subject = undefined;
+    }
+
+    if (req.file) {
+      user.profilePic = `/uploads/profiles/${req.file.filename}`;
+    }
+
+    await user.save();
+
+    res.json({
+      message: 'User updated successfully' + (newUserId && newUserId !== userId ? ' (User ID cascaded)' : ''),
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        subject: user.subject
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while updating user' });
   }
 });
 
@@ -154,14 +229,15 @@ router.post('/signin', async (req, res) => {
       });
     }
 
-    const users = getUsers();
-
-    const user = users.find(u => u.email === email);
+    // Allow login with either email or user ID
+    const user = await User.findOne({ 
+      $or: [{ email: email }, { id: email }] 
+    });
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const isPasswordValid = password === user.password;
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -179,7 +255,9 @@ router.post('/signin', async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        subject: user.subject || null,
+        profilePic: user.profilePic
       }
     });
   } catch (error) {
@@ -188,17 +266,61 @@ router.post('/signin', async (req, res) => {
   }
 });
 
-
-router.get('/users', (req, res) => {
+// Google Sign-in Endpoint
+router.post('/google-signin', async (req, res) => {
   try {
-    const users = getUsers();
-    const userList = users.map(u => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      role: u.role
-    }));
-    res.json(userList);
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ error: 'No token provided' });
+    }
+
+    // Verify token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: GOOGLE_CLIENT_ID,
+    });
+    
+    const payload = ticket.getPayload();
+    const email = payload.email;
+
+    // Check if user exists in the database
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      // For this system, users are added by Admin. 
+      return res.status(403).json({ error: 'User not registered. Contact admin to add your email.' });
+    }
+
+    // Sign JWT
+    const jwtToken = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      SECRET_KEY,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Login successful',
+      token: jwtToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePic: user.profilePic || payload.picture
+      }
+    });
+    
+  } catch (error) {
+    console.error('Google Auth Error:', error);
+    res.status(401).json({ error: 'Invalid Google Token or Auth Error' });
+  }
+});
+
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find({}).select('id name email role profilePic');
+    res.json(users);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }

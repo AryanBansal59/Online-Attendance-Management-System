@@ -1,0 +1,285 @@
+<%- include('partials/header', { title: 'Home - AttendTrack' }) %>
+
+  <style>
+    /* Page specific styles */
+    .hero {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #a78bfa;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      background: #a78bfa;
+      border-radius: 50%;
+      animation: dotPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes dotPulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.7);
+      }
+    }
+
+    @keyframes badgePulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
+      }
+
+      50% {
+        box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+      }
+    }
+
+    .hero-icon {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 0 16px rgba(124, 58, 237, 0.5));
+      animation: iconFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-6px);
+      }
+    }
+
+    .hero h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.8px;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(90deg, var(--violet-light), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .nav-section {
+      margin-bottom: 14px;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .nav-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-grid.cols-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), transparent);
+      opacity: 0;
+      transition: opacity 0.22s;
+    }
+
+    .nav-link:hover {
+      border-color: rgba(124, 58, 237, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(124, 58, 237, 0.15);
+    }
+
+    .nav-link:hover::before {
+      opacity: 1;
+    }
+
+    .nav-link-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .icon-violet {
+      background: rgba(124, 58, 237, 0.18);
+    }
+
+    .icon-cyan {
+      background: rgba(6, 182, 212, 0.15);
+    }
+
+    .icon-emerald {
+      background: rgba(16, 185, 129, 0.15);
+    }
+
+    .icon-amber {
+      background: rgba(245, 158, 11, 0.15);
+    }
+
+    .nav-link-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .nav-link-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .nav-link-arrow {
+      margin-left: auto;
+      color: var(--text-dim);
+      font-size: 14px;
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    .nav-link:hover .nav-link-arrow {
+      transform: translateX(3px);
+      color: var(--violet-light);
+    }
+  </style>
+
+  <div class="hero">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>Live System
+    </div>
+    <span class="hero-icon">📚</span>
+    <h1>Attendance <span>Management</span></h1>
+    <p>Real-time Student Attendance Tracking System</p>
+  </div>
+
+  <div class="card">
+    <%# Authentication Section %>
+      <div class="nav-section">
+        <div class="section-label">Authentication</div>
+        <div class="nav-grid">
+          <a href="/api/auth/signin" class="nav-link">
+            <div class="nav-link-icon icon-violet">🔐</div>
+            <div class="nav-link-content">
+              <div class="nav-link-title">Sign In</div>
+              <div class="nav-link-desc">Access your account</div>
+            </div>
+            <span class="nav-link-arrow">›</span>
+          </a>
+        </div>
+      </div>
+
+      <%# Attendance Section %>
+        <div class="nav-section">
+          <div class="section-label">Attendance</div>
+          <div class="nav-grid cols-2">
+            <a href="/mark-attendance" class="nav-link">
+              <div class="nav-link-icon icon-emerald">✓</div>
+              <div class="nav-link-content">
+                <div class="nav-link-title">Mark</div>
+                <div class="nav-link-desc">Record today</div>
+              </div>
+            </a>
+            <a href="/view-attendance" class="nav-link">
+              <div class="nav-link-icon icon-cyan">📊</div>
+              <div class="nav-link-content">
+                <div class="nav-link-title">View</div>
+                <div class="nav-link-desc">Check records</div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <%# Dashboard Section %>
+          <div class="nav-section">
+            <div class="section-label">Dashboard</div>
+            <div class="nav-grid">
+              <a href="/dashboard" class="nav-link">
+                <div class="nav-link-icon icon-amber">👤</div>
+                <div class="nav-link-content">
+                  <div class="nav-link-title">Dashboard & Profile</div>
+                  <div class="nav-link-desc">View stats, manage profile</div>
+                </div>
+                <span class="nav-link-arrow">›</span>
+              </a>
+            </div>
+          </div>
+  </div>
+
+  <%- include('partials/footer') %>

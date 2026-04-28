@@ -1,0 +1,192 @@
+<%- include('partials/header', { title: 'Sign In - AttendTrack' }) %>
+
+<style>
+  /* Signin specific styles */
+  .logo { text-align: center; margin-bottom: 28px; }
+  .logo-mark { display: inline-flex; width: 52px; height: 52px; background: linear-gradient(135deg, var(--violet), #6366f1); border-radius: 14px; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px; box-shadow: 0 0 30px var(--glow-v); animation: logoPulse 3s ease-in-out infinite; }
+  @keyframes logoPulse { 0%,100% { box-shadow: 0 0 20px var(--glow-v); } 50% { box-shadow: 0 0 40px var(--glow-v), 0 0 60px rgba(99,102,241,0.15); } }
+  .logo h1 { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .logo p { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+  .card-head { margin-bottom: 24px; }
+  .card-head h2 { font-size: 20px; font-weight: 700; color: var(--text); }
+  .card-head p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+  .alert { display: none; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; animation: alertSlide 0.25s ease; }
+  @keyframes alertSlide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .alert.show { display: flex; }
+  .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+  .alert.error { background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.2); color: #fda4af; }
+  .form-group:focus-within .form-label { color: #a78bfa; }
+  .pwd-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 4px; width: auto; transition: color 0.2s; display: flex; align-items: center; }
+  .divider { display: flex; align-items: center; gap: 10px; margin: 22px 0; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .divider span { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .back-link { text-align: center; margin-top: 16px; }
+  .back-link a { font-size: 13px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; }
+</style>
+
+<div class="logo">
+  <div class="logo-mark">📡</div>
+  <h1>AttendTrack</h1>
+  <p>Secure Portal Login</p>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Sign In</h2>
+    <p>Enter your credentials to continue</p>
+  </div>
+
+  <div class="alert" id="message"></div>
+
+  <form id="signinForm" autocomplete="on">
+    <div class="form-group">
+      <label class="form-label" for="userId">
+        <span>User ID</span>
+      </label>
+      <div class="input-wrap">
+        <span class="input-icon">🆔</span>
+        <input type="text" id="userId" name="username" autocomplete="username" placeholder="Enter your ID (e.g. STU001)" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="password">
+        <span>Password</span>
+      </label>
+      <div class="input-wrap">
+        <span class="input-icon">🔑</span>
+        <input type="password" id="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+        <button type="button" class="pwd-toggle" onclick="togglePwd()">👁️</button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn" id="submitBtn">
+      <div class="btn-spinner" id="spinner"></div>
+      <span id="btnText">Sign In</span>
+    </button>
+  </form>
+
+  <div class="divider">
+    <span>Or continue with</span>
+  </div>
+
+  <%# Google Login Button %>
+  <div id="g_id_onload"
+       data-client_id="<%= googleClientId %>"
+       data-context="signin"
+       data-ux_mode="popup"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin"
+       data-type="standard"
+       data-shape="rectangular"
+       data-theme="filled_black"
+       data-text="signin_with"
+       data-size="large"
+       data-logo_alignment="left"
+       data-width="100%">
+  </div>
+</div>
+
+<div class="back-link"><a href="/">← Back to Home</a></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  const API_URL = '/api';
+
+  function togglePwd() {
+    const input = document.getElementById('password');
+    const btn = document.querySelector('.pwd-toggle');
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🔒';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁️';
+    }
+  }
+
+  function showMessage(msg, type) {
+    const el = document.getElementById('message');
+    el.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+    el.className = 'alert show ' + type;
+  }
+
+  function doSignIn() {
+    document.getElementById('signinForm').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  }
+
+  // Explicit Enter key fallback for Chrome autofill compatibility
+  ['userId', 'password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doSignIn();
+      }
+    });
+  });
+
+  document.getElementById('signinForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userId = document.getElementById('userId').value;
+    const password = document.getElementById('password').value;
+
+    if (!userId || !password) {
+      showMessage('Please enter both User ID and Password', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent = 'Signing in...';
+
+    try {
+      const response = await fetch(`${API_URL}/auth/signin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userId, password })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Login failed');
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      showMessage('Login successful! Redirecting...', 'success');
+      setTimeout(() => window.location.href = '/dashboard', 1000);
+
+    } catch (error) {
+      showMessage(error.message, 'error');
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      btnText.textContent = 'Sign In';
+    }
+  });
+
+  async function handleCredentialResponse(response) {
+    console.log("Encoded JWT ID token: " + response.credential);
+    try {
+      const res = await fetch(`${API_URL}/auth/google-signin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: response.credential })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Google Login failed');
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      showMessage('Google login successful! Redirecting...', 'success');
+      setTimeout(() => window.location.href = '/dashboard', 1000);
+    } catch (error) {
+      showMessage(error.message, 'error');
+    }
+  }
+</script>
+
+<%- include('partials/footer') %>

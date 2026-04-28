@@ -1,0 +1,225 @@
+<%- include('partials/header', { title: 'Mark Attendance - AttendTrack' }) %>
+
+<style>
+  /* Mark Attendance specific styles */
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--emerald), var(--cyan)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 18px rgba(16,185,129,0.25); }
+  .header-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .header-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .user-card { text-align: right; font-size: 12px; color: var(--text-muted); }
+  .user-card strong { color: var(--text); display: block; margin-bottom: 6px; font-size: 13px; }
+  .logout-btn { padding: 6px 14px; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.2); color: #fda4af; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; width: auto; }
+  .logout-btn:hover { background: rgba(244,63,94,0.18); }
+  .auth-check { text-align: center; padding: 50px 20px; background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; }
+  .alert { display: none; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; }
+  .alert.show { display: flex; }
+  .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+  .alert.error { background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.2); color: #fda4af; }
+  .input-wrap input[type="date"] { padding: 12px 14px; color-scheme: dark; }
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .status-radio { display: none; }
+  .status-label { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 12px; background: var(--surface2); border: 2px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.22s; text-align: center; }
+  .status-radio.present:checked + .status-label { border-color: var(--emerald); background: rgba(16,185,129,0.1); box-shadow: 0 0 0 2px rgba(16,185,129,0.15), 0 4px 16px rgba(16,185,129,0.12); }
+  .status-radio.absent:checked + .status-label { border-color: var(--rose); background: rgba(244,63,94,0.08); box-shadow: 0 0 0 2px rgba(244,63,94,0.15), 0 4px 16px rgba(244,63,94,0.08); }
+  .back-links { display: flex; gap: 20px; justify-content: center; margin-top: 18px; }
+  .back-links a { font-size: 13px; color: var(--text-dim); text-decoration: none; font-family: 'JetBrains Mono', monospace; }
+</style>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">✓</div>
+    <div>
+      <div class="header-title">Mark Attendance</div>
+      <div class="header-sub">Record student attendance</div>
+    </div>
+  </div>
+  <div class="user-card" id="userInfo"></div>
+</div>
+
+<div class="toast-container" id="toastContainer" style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none;"></div>
+
+<div class="alert" id="message"></div>
+
+<div id="authCheck" style="display:none;" class="auth-check">
+  <p>⚠️ Please login first</p>
+  <a href="/api/auth/signin">Go to Sign In →</a>
+</div>
+
+<form id="attendanceForm" style="display:none;" class="card">
+  <div class="form-group">
+    <label class="form-label" for="studentId">Student ID *</label>
+    <div class="input-wrap">
+      <span class="input-icon">🆔</span>
+      <input type="text" id="studentId" name="studentId" placeholder="Enter student ID" required>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="subject">Subject *</label>
+    <div class="input-wrap">
+      <span class="input-icon">📚</span>
+      <select id="subject" name="subject" required style="width: 100%; padding: 12px 14px 12px 42px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); appearance: none; cursor: pointer; outline: none; transition: all 0.2s;">
+        <option value="">Select Subject...</option>
+      </select>
+      <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); font-size: 10px;">▼</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="date">Date *</label>
+    <div class="input-wrap">
+      <input type="date" id="date" name="date" required>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Attendance Status *</label>
+    <div class="status-grid">
+      <div>
+        <input type="radio" class="status-radio present" id="status-present" name="status" value="present" required>
+        <label class="status-label" for="status-present">
+          <span class="status-emoji">✅</span>
+          <span class="status-name">Present</span>
+          <span class="status-desc">Student attended</span>
+        </label>
+      </div>
+      <div>
+        <input type="radio" class="status-radio absent" id="status-absent" name="status" value="absent">
+        <label class="status-label" for="status-absent">
+          <span class="status-emoji">❌</span>
+          <span class="status-name">Absent</span>
+          <span class="status-desc">Student missed</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <button type="submit" class="btn" id="submitBtn">
+    <div class="btn-spinner" id="spinner"></div>
+    <span id="btnText">Mark Attendance</span>
+  </button>
+</form>
+
+<div class="back-links" id="backLink">
+  <a href="/dashboard">← Dashboard</a>
+  <a href="/">← Home</a>
+</div>
+
+<script>
+  const API_URL = '/api';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('date').value = today;
+
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) {
+    document.getElementById('authCheck').style.display = 'block';
+  } else if (user.role !== 'teacher') {
+    document.getElementById('authCheck').style.display = 'block';
+    document.getElementById('authCheck').innerHTML = `
+      <p>🚫 Access Denied</p>
+      <p style="color:var(--text-muted);margin-bottom:12px;font-size:13px;">Only teachers can mark attendance.</p>
+      <a href="/dashboard">Go to Dashboard</a>
+    `;
+  } else {
+    document.getElementById('attendanceForm').style.display = 'block';
+    document.getElementById('userInfo').innerHTML = `
+      <strong>${user.name}</strong>
+      <span>${user.email}</span><br>
+      <button class="logout-btn" onclick="logout()" style="margin-top:6px;">Sign Out</button>
+    `;
+    
+    // Populate and auto-select teacher's subject ONLY
+    if (user.role === 'teacher') {
+      const subjectSelect = document.getElementById('subject');
+      if (subjectSelect) {
+        subjectSelect.innerHTML = ''; // Clear previous options
+        const subStr = user.subject || 'General';
+        const subjects = subStr.split(',').map(s => s.trim());
+        subjects.forEach(sub => {
+          const opt = document.createElement('option');
+          opt.value = sub;
+          opt.textContent = sub;
+          subjectSelect.appendChild(opt);
+        });
+        if (subjects.length > 0) subjectSelect.value = subjects[0];
+      }
+    }
+  }
+
+  function showToast(title, msg, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.style.cssText = `
+      display: flex; align-items: center; gap: 14px; padding: 16px 24px; border-radius: 16px; 
+      font-size: 14px; font-weight: 600; color: var(--text); min-width: 320px; max-width: 480px; 
+      backdrop-filter: blur(12px); box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08); 
+      animation: toastIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards; pointer-events: all; position: relative;
+      background: ${type === 'success' ? 'rgba(16,185,129,0.15)' : 'rgba(244,63,94,0.12)'};
+      border: 1px solid ${type === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(244,63,94,0.3)'};
+    `;
+    toast.innerHTML = `
+      <div style="font-size: 22px;">${type === 'success' ? '✅' : '❌'}</div>
+      <div style="flex: 1;">
+        <div style="font-size: 14px; font-weight: 700;">${title}</div>
+        <div style="font-size: 12px; color: var(--text-muted); font-weight: 400;">${msg}</div>
+      </div>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'toastOut 0.35s ease forwards';
+      setTimeout(() => toast.remove(), 350);
+    }, 4000);
+  }
+
+  function showMessage(msg, type) {
+    const el = document.getElementById('message');
+    if (!el) return;
+    el.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+    el.className = 'alert show ' + type;
+    if (type === 'error') {
+      showToast('Error', msg, 'error');
+    }
+  }
+
+  document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusEl = document.querySelector('input[name="status"]:checked');
+    if (!statusEl) { showMessage('Please select attendance status', 'error'); return; }
+    const studentId = document.getElementById('studentId').value;
+    const date = document.getElementById('date').value;
+    const subject = document.getElementById('subject').value;
+    const status = statusEl.value;
+    if (!subject) { showMessage('Please select a subject', 'error'); return; }
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    btn.disabled = true; btn.classList.add('loading'); spinner.style.display = 'block'; btnText.textContent = 'Marking...';
+    try {
+      const response = await fetch(`${API_URL}/attendance/mark`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, date, status, subject })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to mark attendance');
+      showMessage(`✓ Attendance marked as ${status} for ID: ${studentId}`, 'success');
+      showToast('Success', `Attendance marked as ${status} for ID: ${studentId}`, 'success');
+      document.getElementById('studentId').value = '';
+      document.querySelectorAll('input[name="status"]').forEach(r => r.checked = false);
+    } catch (error) {
+      showMessage(error.message, 'error');
+    } finally {
+      btn.disabled = false; btn.classList.remove('loading'); spinner.style.display = 'none'; btnText.textContent = 'Mark Attendance';
+    }
+  });
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/api/auth/signin';
+  }
+</script>
+
+<%- include('partials/footer') %>

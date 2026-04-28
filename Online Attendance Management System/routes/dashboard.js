@@ -1,44 +1,25 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const User = require('../models/User');
+const Attendance = require('../models/Attendance');
 
 const router = express.Router();
 
-const usersFile = path.join(__dirname, '../data/users.json');
-const attendanceFile = path.join(__dirname, '../data/attendance.json');
-
-// Helper function to read users
-const getUsers = () => {
+router.get('/stats', async (req, res) => {
   try {
-    const data = fs.readFileSync(usersFile, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return [];
-  }
-};
-
-// Helper function to read attendance
-const getAttendance = () => {
-  try {
-    const data = fs.readFileSync(attendanceFile, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return [];
-  }
-};
-
-
-router.get('/stats', (req, res) => {
-  try {
-    const users = getUsers();
-    const attendance = getAttendance();
+    const totalUsers = await User.countDocuments();
+    const totalStudents = await User.countDocuments({ role: 'student' });
+    const totalTeachers = await User.countDocuments({ role: 'teacher' });
+    const totalAttendanceRecords = await Attendance.countDocuments();
+    
+    // Get last 10 attendance records
+    const recentAttendance = await Attendance.find().sort({ markedAt: -1 }).limit(10);
 
     const stats = {
-      totalUsers: users.length,
-      totalStudents: users.filter(u => u.role === 'student').length,
-      totalTeachers: users.filter(u => u.role === 'teacher').length,
-      totalAttendanceRecords: attendance.length,
-      recentAttendance: attendance.slice(-10)
+      totalUsers,
+      totalStudents,
+      totalTeachers,
+      totalAttendanceRecords,
+      recentAttendance
     };
 
     res.json(stats);
@@ -49,22 +30,18 @@ router.get('/stats', (req, res) => {
 });
 
 
-router.get('/profile/:userId', (req, res) => {
+router.get('/profile/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const users = getUsers();
-    const attendance = getAttendance();
 
-
-    const user = users.find(u => u.id === userId);
+    const user = await User.findOne({ id: userId });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-
     let attendanceData = null;
     if (user.role === 'student') {
-      const studentAttendance = attendance.filter(a => a.studentId === userId);
+      const studentAttendance = await Attendance.find({ studentId: userId });
       if (studentAttendance.length > 0) {
         const totalDays = studentAttendance.length;
         const presentDays = studentAttendance.filter(a => a.status === 'present').length;
@@ -88,6 +65,8 @@ router.get('/profile/:userId', (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        subject: user.subject,
+        profilePic: user.profilePic,
         createdAt: user.createdAt
       },
       attendance: attendanceData
@@ -99,7 +78,7 @@ router.get('/profile/:userId', (req, res) => {
 });
 
 
-router.post('/profile/:userId/update', (req, res) => {
+router.post('/profile/:userId/update', async (req, res) => {
   try {
     const { userId } = req.params;
     const { name } = req.body;
@@ -108,15 +87,14 @@ router.post('/profile/:userId/update', (req, res) => {
       return res.status(400).json({ error: 'Name is required' });
     }
 
-    const users = getUsers();
-    const user = users.find(u => u.id === userId);
+    const user = await User.findOne({ id: userId });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     user.name = name;
-    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
+    await user.save();
 
     res.json({ 
       message: 'Profile updated successfully',
@@ -124,7 +102,8 @@ router.post('/profile/:userId/update', (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        profilePic: user.profilePic
       }
     });
   } catch (error) {
