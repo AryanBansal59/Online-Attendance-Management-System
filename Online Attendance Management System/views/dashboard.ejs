@@ -1104,7 +1104,7 @@
             <td style="color:var(--text-muted);font-size:13px;">${u.subject || '—'}</td>
             <td>
               <div class="btn-group">
-                ${u.role === 'admin' ? `
+                ${u.email === 'admin@attendtrack.com' ? `
                   <button class="btn-sm btn-edit" onclick="openEditModal('${u.id}', '${u.name}', '${u.email}', '${u.role}', '${u.subject || ''}')">Edit</button>
                 ` : `
                   <button class="btn-sm btn-edit" onclick="openEditModal('${u.id}', '${u.name}', '${u.email}', '${u.role}', '${u.subject || ''}')">Edit</button>

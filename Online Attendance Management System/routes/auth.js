@@ -107,6 +107,8 @@ router.get('/admin/users', async (req, res) => {
 });
 
 
+const MAIN_ADMIN_EMAIL = 'admin@attendtrack.com';
+
 router.delete('/admin/users/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -116,8 +118,8 @@ router.delete('/admin/users/:userId', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (userToDelete.role === 'admin') {
-      return res.status(403).json({ error: 'Cannot delete admin users' });
+    if (userToDelete.email === MAIN_ADMIN_EMAIL) {
+      return res.status(403).json({ error: 'Cannot delete the main admin account' });
     }
 
     await User.deleteOne({ id: userId });
