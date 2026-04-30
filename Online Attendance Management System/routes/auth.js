@@ -43,9 +43,9 @@ router.post('/admin/add-user', upload.single('profilePic'), async (req, res) => 
       });
     }
 
-    if (!['student', 'teacher'].includes(role)) {
+    if (!['student', 'teacher', 'admin'].includes(role)) {
       return res.status(400).json({ 
-        error: 'Role must be student or teacher' 
+        error: 'Role must be student, teacher, or admin' 
       });
     }
 
@@ -143,10 +143,7 @@ router.put('/admin/users/:userId', upload.single('profilePic'), async (req, res)
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (user.role === 'admin' && userId !== req.body.currentAdminId) { 
-      // Prevent editing other admins unless specific permissions are added later
-      return res.status(403).json({ error: 'Cannot update admin users' });
-    }
+    // Admins can be edited by any admin (no restriction)
 
     // Handle User ID Change (Cascading)
     let finalId = userId;
@@ -183,9 +180,9 @@ router.put('/admin/users/:userId', upload.single('profilePic'), async (req, res)
       user.password = await bcrypt.hash(password, 10);
     }
     
-    if (role && user.role !== 'admin') { // Don't let admin change their own role here
-      if (!['student', 'teacher'].includes(role)) {
-        return res.status(400).json({ error: 'Role must be student or teacher' });
+    if (role) {
+      if (!['student', 'teacher', 'admin'].includes(role)) {
+        return res.status(400).json({ error: 'Role must be student, teacher, or admin' });
       }
       user.role = role;
     }

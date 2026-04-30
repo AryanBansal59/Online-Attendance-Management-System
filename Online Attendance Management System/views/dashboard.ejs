@@ -443,6 +443,7 @@
             <select class="form-select" id="editRole" required onchange="toggleEditSubjectField(this.value)">
               <option value="student">Student</option>
               <option value="teacher">Teacher</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
           <div class="form-group" id="editSubjectGroup" style="display:none;">
@@ -1103,10 +1104,12 @@
             <td style="color:var(--text-muted);font-size:13px;">${u.subject || '—'}</td>
             <td>
               <div class="btn-group">
-                ${u.role !== 'admin' ? `
+                ${u.role === 'admin' ? `
+                  <button class="btn-sm btn-edit" onclick="openEditModal('${u.id}', '${u.name}', '${u.email}', '${u.role}', '${u.subject || ''}')">Edit</button>
+                ` : `
                   <button class="btn-sm btn-edit" onclick="openEditModal('${u.id}', '${u.name}', '${u.email}', '${u.role}', '${u.subject || ''}')">Edit</button>
                   <button class="btn-sm btn-delete" onclick="deleteUser('${u.id}')">Delete</button>
-                ` : '<span style="color:var(--text-dim)">—</span>'}
+                `}
               </div>
             </td>
           </tr>`;
@@ -1202,7 +1205,7 @@
       const g = document.getElementById('editSubjectGroup');
       const i = document.getElementById('editSubject');
       if (role === 'teacher') { g.style.display = 'block'; i.required = true; }
-      else { g.style.display = 'none'; i.required = false; }
+      else { g.style.display = 'none'; i.required = false; i.value = ''; }
     }
 
     async function handleUpdateUser(e) {
