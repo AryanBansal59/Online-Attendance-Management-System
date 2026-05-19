@@ -1,319 +1,100 @@
-# Online Attendance Management System - Backend API
+# AttendTrack - Online Attendance Management System
 
-A Node.js and Express backend for managing student attendance in real-time.
+A comprehensive, full-stack web application built with Node.js, Express, MongoDB, and EJS for managing student attendance efficiently.
 
-## Project Structure
+## 🚀 Project Flow
 
-```
-├── server.js                 # Main entry point
-├── package.json             # Dependencies
-├── .env                     # Environment variables
-├── routes/
-│   ├── auth.js             # Sign-up and Sign-in endpoints
-│   ├── attendance.js        # Mark and view attendance
-│   └── dashboard.js         # User profile and statistics
-└── data/
-    ├── users.json          # User database (auto-created)
-    └── attendance.json      # Attendance records (auto-created)
-```
+The application is designed with different roles in mind (Student, Teacher, Admin), providing tailored workflows for each to ensure smooth and secure operations.
 
-## Installation
+### 1. Authentication & Onboarding
+- **Landing/Sign-in:** Users land on the homepage and proceed to the authentication portal.
+- **Role-based Access:** During sign-up, users are assigned specific roles (`student`, `teacher`, `admin`).
+- **Session Management:** Secure access and sessions are maintained using JWT (JSON Web Tokens).
 
-1. **Install dependencies:**
+### 2. Teacher Workflow (Marking Attendance)
+- **Dashboard Overview:** Teachers log in and view overall attendance statistics and quick actions.
+- **Group Selection:** Navigate to the "Mark Attendance" section. Teachers select specific student groups (e.g., Class A, Group 1) to filter the list of students.
+- **Bulk Marking:** The system displays a filtered list of students in the selected group. Teachers can efficiently mark them as *Present*, *Absent*, or *Late* for a specific date all at once.
+- **Data Integrity:** Server-side validation ensures no duplicate attendance entries can be created for the same student on the same day. Any modifications must be done through dedicated update flows.
+
+### 3. Student Workflow (Viewing Attendance)
+- **Dashboard Access:** Students log in to their personalized dashboard.
+- **Real-time Stats:** They can instantly view their attendance percentage, total days, present days, and absent/late days.
+- **Attendance History:** Students can review a detailed log of their attendance status on a day-by-day basis, providing full transparency.
+
+### 4. Admin Workflow (Management)
+- Admins have elevated privileges to oversee all users, view system-wide attendance summaries, and ensure the system runs smoothly.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB (using Mongoose ORM)
+- **Frontend:** EJS (Embedded JavaScript templating), HTML, CSS, Vanilla JS
+- **Authentication:** JSON Web Tokens (JWT), bcryptjs for password hashing
+
+---
+
+## ⚙️ Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd online-attendance-management-system
+   ```
+
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. **Start the server:**
+3. **Configure Environment Variables:**
+   Create a `.env` file in the root directory and configure the following variables:
+   ```env
+   PORT=5001
+   MONGODB_URI=mongodb://localhost:27017/attendance-system
+   JWT_SECRET=your_super_secret_key_here
+   ```
+
+4. **Start the application:**
    ```bash
    npm start
    ```
-   
-   Or for development with auto-reload:
+   Or for development mode with automatic reloading:
    ```bash
    npm run dev
    ```
 
-The server will run on `http://localhost:5000`
+5. **Access the application:**
+   Open your browser and navigate to `http://localhost:5001` (or whichever port you configured).
 
 ---
 
-## API Endpoints
+## 📖 API Documentation
 
-### 1. AUTHENTICATION (Sign-up & Sign-in)
+The backend also exposes robust API endpoints for potential mobile app integrations or headless use.
 
-#### Sign-up - Create new account
-- **Endpoint:** `POST /api/auth/signup`
-- **Request Body:**
-  ```json
-  {
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "password123",
-    "role": "student"
-  }
-  ```
-- **Role Options:** `student`, `teacher`, `admin`
-- **Response:**
-  ```json
-  {
-    "message": "User registered successfully",
-    "user": {
-      "id": "1234567890",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "role": "student"
-    }
-  }
-  ```
+### Authentication
+- `POST /api/auth/signup` - Register a new user
+- `POST /api/auth/signin` - Login and receive JWT token
+- `GET /api/auth/users` - Get all users (Admin)
 
-#### Sign-in - Login to account
-- **Endpoint:** `POST /api/auth/signin`
-- **Request Body:**
-  ```json
-  {
-    "email": "john@example.com",
-    "password": "password123"
-  }
-  ```
-- **Response:**
-  ```json
-  {
-    "message": "Login successful",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "1234567890",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "role": "student"
-    }
-  }
-  ```
+### Attendance
+- `POST /api/attendance/mark` - Mark attendance (Teacher/Admin only)
+- `GET /api/attendance/my-attendance/:studentId` - Get personal attendance history
+- `GET /api/attendance/all` - Get all attendance records
+- `GET /api/attendance/summary` - Get attendance summary for all students
 
-#### Get All Users
-- **Endpoint:** `GET /api/auth/users`
-- **Response:** Array of all users (without passwords)
+### Dashboard
+- `GET /api/dashboard/stats` - Get system-wide statistics
+- `GET /api/dashboard/profile/:userId` - Get user profile details
+- `POST /api/dashboard/profile/:userId/update` - Update user profile
 
 ---
 
-### 2. ATTENDANCE MANAGEMENT
-
-#### Mark Attendance (Teacher)
-- **Endpoint:** `POST /api/attendance/mark`
-- **Request Body:**
-  ```json
-  {
-    "studentId": "student123",
-    "studentName": "John Doe",
-    "date": "2024-03-01",
-    "status": "present"
-  }
-  ```
-- **Status Options:** `present`, `absent`, `late`
-- **Response:**
-  ```json
-  {
-    "message": "Attendance marked successfully",
-    "record": {
-      "id": "1234567890",
-      "studentId": "student123",
-      "studentName": "John Doe",
-      "date": "2024-03-01",
-      "status": "present",
-      "markedAt": "2024-03-01T10:30:00.000Z"
-    }
-  }
-  ```
-
-#### View My Attendance (Student - Real-time)
-- **Endpoint:** `GET /api/attendance/my-attendance/:studentId`
-- **Response:**
-  ```json
-  {
-    "studentId": "student123",
-    "name": "John Doe",
-    "attendancePercentage": 85.5,
-    "totalDays": 20,
-    "presentDays": 17,
-    "lateDays": 1,
-    "absentDays": 2,
-    "records": [
-      {
-        "id": "1234567890",
-        "studentId": "student123",
-        "studentName": "John Doe",
-        "date": "2024-03-01",
-        "status": "present",
-        "markedAt": "2024-03-01T10:30:00.000Z"
-      }
-    ]
-  }
-  ```
-
-#### Get All Attendance Records
-- **Endpoint:** `GET /api/attendance/all`
-- **Response:** All attendance records in the system
-
-#### Get Attendance Summary (All Students)
-- **Endpoint:** `GET /api/attendance/summary`
-- **Response:**
-  ```json
-  {
-    "totalStudents": 5,
-    "summary": [
-      {
-        "studentId": "student123",
-        "name": "John Doe",
-        "totalDays": 20,
-        "presentDays": 17,
-        "lateDays": 1,
-        "absentDays": 2,
-        "attendancePercentage": "85.50"
-      }
-    ]
-  }
-  ```
-
----
-
-### 3. DASHBOARD & PROFILE
-
-#### Get Dashboard Statistics
-- **Endpoint:** `GET /api/dashboard/stats`
-- **Response:**
-  ```json
-  {
-    "totalUsers": 25,
-    "totalStudents": 20,
-    "totalTeachers": 5,
-    "totalAttendanceRecords": 150,
-    "recentAttendance": [...]
-  }
-  ```
-
-#### Get User Profile
-- **Endpoint:** `GET /api/dashboard/profile/:userId`
-- **Response:**
-  ```json
-  {
-    "user": {
-      "id": "student123",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "role": "student",
-      "createdAt": "2024-02-01T10:00:00.000Z"
-    },
-    "attendance": {
-      "totalDays": 20,
-      "presentDays": 17,
-      "lateDays": 1,
-      "absentDays": 2,
-      "attendancePercentage": "85.50"
-    }
-  }
-  ```
-
-#### Update User Profile
-- **Endpoint:** `POST /api/dashboard/profile/:userId/update`
-- **Request Body:**
-  ```json
-  {
-    "name": "Jane Doe"
-  }
-  ```
-- **Response:**
-  ```json
-  {
-    "message": "Profile updated successfully",
-    "user": {
-      "id": "student123",
-      "name": "Jane Doe",
-      "email": "john@example.com",
-      "role": "student"
-    }
-  }
-  ```
-
----
-
-## Features Summary
-
-✅ **Page 1 - Sign-up Page** (POST)
-   - User registration with role selection
-   
-✅ **Page 2 - Sign-in Page** (POST)
-   - User login with JWT token generation
-
-✅ **Page 3 - Mark Attendance Page** (POST)
-   - Teachers can mark attendance for students
-
-✅ **Page 4 - View Attendance Page** (GET)
-   - Students can check real-time attendance percentage
-
-✅ **Page 5 - Dashboard Page** (GET + POST)
-   - View profile, statistics, update name
-
----
-
-## Testing the API
-
-You can test the API using **Postman** or **cURL**:
-
-### Example: Sign-up
-```bash
-curl -X POST http://localhost:5000/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Student Name",
-    "email": "student@example.com",
-    "password": "password123",
-    "role": "student"
-  }'
-```
-
-### Example: Sign-in
-```bash
-curl -X POST http://localhost:5000/api/auth/signin \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "student@example.com",
-    "password": "password123"
-  }'
-```
-
-### Example: Mark Attendance
-```bash
-curl -X POST http://localhost:5000/api/attendance/mark \
-  -H "Content-Type: application/json" \
-  -d '{
-    "studentId": "12345",
-    "studentName": "Student Name",
-    "date": "2024-03-01",
-    "status": "present"
-  }'
-```
-
-### Example: View Attendance
-```bash
-curl http://localhost:5000/api/attendance/my-attendance/12345
-```
-
----
-
-## Notes
-
-- Attendance percentage calculation: **(Present Days + Late Days × 0.5) / Total Days × 100**
-- Passwords are encrypted using bcryptjs
-- JWT tokens expire after 7 days
-- Data is stored locally in JSON files (data/users.json and data/attendance.json)
-- For production, migrate to a real database like MongoDB or PostgreSQL
-
----
-
-## Next Steps
-
-1. Install dependencies: `npm install`
-2. Start the server: `npm start`
-3. Test endpoints using Postman or cURL
-4. Connect frontend application to these endpoints
-5. For production, add database integration and environment configuration
+## 📝 Features Summary
+✅ **Authentication Page:** Secure Registration and Login with role selection.
+✅ **Mark Attendance Page:** Teachers can bulk-mark attendance filtering by student groups.
+✅ **View Attendance Page:** Students can track real-time attendance percentages and history.
+✅ **Dashboard:** Centralized hub to view profile, statistics, and recent activity.
