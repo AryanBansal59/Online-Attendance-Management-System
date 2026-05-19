@@ -61,5 +61,10 @@ Dashboard
 GET /api/dashboard/stats - Get system-wide statistics
 GET /api/dashboard/profile/:userId - Get user profile details
 POST /api/dashboard/profile/:userId/update - Update user profile
+
+
+
+
+
 📝 Features Summary
 ✅ Authentication Page: Secure Registration and Login with role selection. ✅ Mark Attendance Page: Teachers can bulk-mark attendance filtering by student groups. ✅ View Attendance Page: Students can track real-time attendance percentages and history. ✅ Dashboard: Centralized hub to view profile, statistics, and recent activity.
