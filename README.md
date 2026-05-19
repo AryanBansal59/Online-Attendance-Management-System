@@ -48,19 +48,6 @@ Access the application: Open your browser and navigate to http://localhost:5001 
 📖 API Documentation
 The backend also exposes robust API endpoints for potential mobile app integrations or headless use.
 
-Authentication
-POST /api/auth/signup - Register a new user
-POST /api/auth/signin - Login and receive JWT token
-GET /api/auth/users - Get all users (Admin)
-Attendance
-POST /api/attendance/mark - Mark attendance (Teacher/Admin only)
-GET /api/attendance/my-attendance/:studentId - Get personal attendance history
-GET /api/attendance/all - Get all attendance records
-GET /api/attendance/summary - Get attendance summary for all students
-Dashboard
-GET /api/dashboard/stats - Get system-wide statistics
-GET /api/dashboard/profile/:userId - Get user profile details
-POST /api/dashboard/profile/:userId/update - Update user profile
 
 
 
