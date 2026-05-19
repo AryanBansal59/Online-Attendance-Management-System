@@ -26,6 +26,9 @@ const UserSchema = new mongoose.Schema({
   subject: {
     type: String
   },
+  group: {
+    type: String
+  },
   profilePic: {
     type: String
   },
