@@ -2,11 +2,11 @@
   "name": "online-attendance-management-system",
   "version": "1.0.0",
   "description": "Backend for online attendance management system",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "watch": "nodemon --watch . --ext js,html,json server.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "watch": "nodemon --watch . --ext js,html,json index.js"
   },
   "keywords": [
     "attendance",
